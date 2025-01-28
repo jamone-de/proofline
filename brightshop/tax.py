@@ -49,3 +49,42 @@ def vat_special_de(category):
     if category == "hygiene":
         return 700
     return None
+
+
+def vat_special_ie(category):
+    if category == "kids_clothing":
+        return 0
+    return None
+
+
+def vat_special_pl(category):
+    if category == "books":
+        return 500
+    return None
+
+
+def tax_rate_bp(country, vat_class="standard", category=""):
+    """VAT rate in basis points for a delivery to `country`."""
+    if country not in EU_COUNTRIES:
+        return 0                      # exports are zero-rated
+    if vat_class == "zero":
+        return 0
+    hook = globals().get("vat_special_" + country.lower())
+    if hook is not None:
+        special = hook(category)
+        if special is not None:
+            return special
+    if vat_class == "reduced":
+        return REDUCED_RATES_BP[country]
+    return STANDARD_RATES_BP[country]
+
+
+def is_reverse_charge(ship_country, customer):
+    """B2B deliveries to a valid foreign EU VAT id are taxed by the buyer."""
+    vat_id = getattr(customer, "vat_id", None)
+    if not is_valid_vat_id(vat_id):
+        return False
+    vat_id = vat_id.replace(" ", "").upper()
+    if vat_id[:2] == "DE":
+        return False
+    return is_eu(ship_country) and ship_country == vat_id[:2]
