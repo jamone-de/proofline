@@ -109,7 +109,7 @@ def calculate_order_total(cart, customer, ctx):
         if b2b:
             # promo and clearance prices are already the lowest price
             if price_kind == "list":
-                unit = unit - percent_bp(unit, 500)
+                unit = unit - percent_bp(unit, config.B2B_LIST_DISCOUNT_BP)
                 price_kind = "b2b list"
         signed_qty = -qty if ctx.mode == "return" else qty
         if ctx.mode == "sale" and product.category != "digital":
