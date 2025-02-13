@@ -44,3 +44,16 @@ def rule_first_order(coupon, base_cents, info):
     if info["previous_orders"] > 0:
         return 0, "coupon only valid for a first order", False
     return rule_percent(coupon, base_cents, info)
+
+
+def rule_seasonal(coupon, base_cents, info):
+    today = info["today"].isoformat()
+    if today < coupon["starts"] or today > coupon["expires"]:
+        return 0, "coupon not valid on this date", False
+    return rule_percent(coupon, base_cents, info)
+
+
+def rule_fixed(coupon, base_cents, info):
+    if base_cents < coupon.get("min_cents", 0):
+        return 0, "coupon minimum not reached", False
+    return min(coupon["fixed_cents"], base_cents), "coupon", False
