@@ -41,3 +41,28 @@ class Carrier:
 
     def handles(self, zone, weight_g):
         return False
+
+
+class CarrierDHL(Carrier):
+    code = "DHL"
+    priority = 1
+
+    def handles(self, zone, weight_g):
+        return zone in (ZONE_DE, ZONE_EU) and weight_g <= 20000
+
+
+class CarrierDPD(Carrier):
+    code = "DPD"
+    priority = 2
+
+    def handles(self, zone, weight_g):
+        return zone in (ZONE_DE, ZONE_EU) and weight_g <= 31500
+
+
+class CarrierUPS(Carrier):
+    code = "UPS"
+    priority = 3
+    fuel_bp = 700
+
+    def handles(self, zone, weight_g):
+        return True
