@@ -1,0 +1,99 @@
+/* Brightshop back office. IBM Plex, navy ink, gold accent (see DESIGN_NOTES.md). */
+@font-face { font-family: "IBM Plex Sans"; font-weight: 400; font-display: swap; src: url("../fonts/ibm-plex-sans-400.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-weight: 500; font-display: swap; src: url("../fonts/ibm-plex-sans-500.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans"; font-weight: 600; font-display: swap; src: url("../fonts/ibm-plex-sans-600.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Mono"; font-weight: 400; font-display: swap; src: url("../fonts/ibm-plex-mono-400.woff2") format("woff2"); }
+
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --surface-2: #f9fafb;
+  --ink: #0a1f3b;
+  --text: #1a2229;
+  --muted: #5b6772;
+  --faint: #9aa6b2;
+  --border: #dbe0e5;
+  --border-soft: #e9ecef;
+  --primary: #1b4e8c;
+  --primary-soft: #e4ecf6;
+  --gold: #b8956a;
+  --gold-ink: #8a6b47;
+  --gold-soft: #f2e9dd;
+  --ok: #2e7d5b;
+  --ok-soft: #e2f1ea;
+  --warn: #b8863a;
+  --warn-soft: #f7ecd7;
+  --bad: #b23a3a;
+  --bad-soft: #f6e0e0;
+  --rail: #0a1f3b;
+  --rail-text: #b9c6d6;
+  --rail-line: rgba(255, 255, 255, .09);
+  --shadow: 0 1px 2px rgba(10, 31, 59, .05), 0 6px 18px rgba(10, 31, 59, .04);
+  --radius: 10px;
+  --bar: #1b4e8c;
+  --bar-last: #b8956a;
+  --on-ink: #ffffff;
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  --bg: #08131f;
+  --surface: #0f1e2e;
+  --surface-2: #132539;
+  --ink: #e9eef4;
+  --text: #dbe3eb;
+  --muted: #93a2b2;
+  --faint: #65778a;
+  --border: #223650;
+  --border-soft: #1a2c42;
+  --primary: #6fa4e6;
+  --primary-soft: #14304f;
+  --gold: #d1ad82;
+  --gold-ink: #dcb98f;
+  --gold-soft: #2b2419;
+  --ok: #5fc296;
+  --ok-soft: #123326;
+  --warn: #e0ad5e;
+  --warn-soft: #382b12;
+  --bad: #ee8b8b;
+  --bad-soft: #3a1a1e;
+  --rail: #050d16;
+  --rail-line: rgba(255, 255, 255, .07);
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+  --bar: #4f86c7;
+  --bar-last: #d1ad82;
+  --on-ink: #0a1f3b;
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root[data-theme="auto"] {
+    --bg: #08131f;
+    --surface: #0f1e2e;
+    --surface-2: #132539;
+    --ink: #e9eef4;
+    --text: #dbe3eb;
+    --muted: #93a2b2;
+    --faint: #65778a;
+    --border: #223650;
+    --border-soft: #1a2c42;
+    --primary: #6fa4e6;
+    --primary-soft: #14304f;
+    --gold: #d1ad82;
+    --gold-ink: #dcb98f;
+    --gold-soft: #2b2419;
+    --ok: #5fc296;
+    --ok-soft: #123326;
+    --warn: #e0ad5e;
+    --warn-soft: #382b12;
+    --bad: #ee8b8b;
+    --bad-soft: #3a1a1e;
+    --rail: #050d16;
+    --rail-line: rgba(255, 255, 255, .07);
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 8px 24px rgba(0, 0, 0, .25);
+    --bar: #4f86c7;
+    --bar-last: #d1ad82;
+    --on-ink: #0a1f3b;
+    color-scheme: dark;
+  }
+}
