@@ -1,0 +1,55 @@
+{% from "_macros.html" import icon %}
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Back office{% endblock %} | Brightshop</title>
+  <link rel="preload" href="{{ url_for('static', filename='fonts/ibm-plex-sans-400.woff2') }}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <script>
+    var t = null;
+    try { t = localStorage.getItem("brightshop-theme"); } catch (e) {}
+    if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.documentElement.setAttribute("data-theme", t);
+  </script>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail" id="rail">
+    <a class="brand" href="{{ url_for('dashboard') }}">
+      <svg class="brand-mark" viewBox="0 0 36 36" aria-hidden="true">
+        <rect width="36" height="36" rx="9" fill="#b8956a"/>
+        <circle cx="18" cy="18" r="6" fill="#0a1f3b"/>
+        <g stroke="#0a1f3b" stroke-width="2.2" stroke-linecap="round"><path d="M18 5.5v3M18 27.5v3M5.5 18h3M27.5 18h3M9.2 9.2l2.1 2.1M24.7 24.7l2.1 2.1M9.2 26.8l2.1-2.1M24.7 11.3l2.1-2.1"/></g>
+      </svg>
+      <span class="brand-name">Brightshop<span class="brand-sub">Back office</span></span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="{{ url_for('dashboard') }}" class="{{ 'on' if active == 'dashboard' }}">{{ icon('dashboard') }}Dashboard</a>
+      <a href="{{ url_for('orders') }}" class="{{ 'on' if active == 'orders' }}">{{ icon('orders') }}Orders</a>
+      <a href="{{ url_for('calculator') }}" class="{{ 'on' if active == 'calculator' }}">{{ icon('calculator') }}Price calculator</a>
+      <a href="{{ url_for('customer_list') }}" class="{{ 'on' if active == 'customers' }}">{{ icon('customers') }}Customers</a>
+      <a href="{{ url_for('reports') }}" class="{{ 'on' if active == 'reports' }}">{{ icon('reports') }}Reports</a>
+      <a href="{{ url_for('inventory_view') }}" class="{{ 'on' if active == 'inventory' }}">{{ icon('inventory') }}Inventory</a>
+    </nav>
+    <div class="rail-foot">
+      <strong>Demo shop</strong>
+      Fictional data, fixed clock.<br>Nothing leaves this machine.
+    </div>
+  </aside>
+  <div class="main">
+    <header class="topbar">
+      <button class="icon-btn menu-btn" id="menu-btn" aria-label="Open menu">{{ icon('menu') }}</button>
+      <div class="grow"></div>
+      <span class="pill date"><span class="dot"></span>Shop date {{ today | datefmt }}</span>
+      <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme">
+        <span class="theme-dark-only">{{ icon('moon') }}</span><span class="theme-light-only">{{ icon('sun') }}</span>
+      </button>
+    </header>
+    <main class="content">{% block content %}{% endblock %}</main>
+  </div>
+</div>
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
