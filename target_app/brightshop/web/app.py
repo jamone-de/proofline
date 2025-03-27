@@ -68,4 +68,64 @@ def create_app(store=None, today=None):
             customers=store.customers, receivables=reporting.open_receivables(store, today),
             active="dashboard")
 
+    @app.route("/orders")
+    def orders():
+        status = request.args.get("status", "")
+        query = request.args.get("q", "").strip().lower()
+        rows = sorted(store.orders.values(), key=lambda o: (o.placed_on, o.id), reverse=True)
+        counts = {name: 0 for name in helpers.ORDER_STATUSES}
+        for order in rows:
+            counts[order.status] += 1
+        if status:
+            rows = [o for o in rows if o.status == status]
+        if query:
+            rows = [o for o in rows if query in o.number.lower()
+                    or query in store.customers[o.customer_id].name.lower()]
+        return render_template("orders.html", orders=rows, customers=store.customers,
+                               statuses=helpers.ORDER_STATUSES, status=status, q=query,
+                               counts=counts, total=len(store.orders), active="orders")
+
+    @app.route("/orders/<int:order_id>")
+    def order_detail(order_id):
+        order = store.orders.get(order_id)
+        if order is None:
+            abort(404)
+        return render_template(
+            "order_detail.html", order=order, customer=store.customers[order.customer_id],
+            invoices=store.invoices_for_order(order.id), today=clock.today(),
+            email=notifications.build_email(
+                "order_confirmation" if order.status in ("open", "paid") else "shipping",
+                order, store.customers[order.customer_id], clock.today()),
+            status_of=invoicing.invoice_status, active="orders")
+
+    @app.route("/orders/<int:order_id>/invoice")
+    def order_invoice(order_id):
+        found = store.invoices_for_order(order_id)
+        if not found:
+            abort(404)
+        return redirect(url_for("invoice_view", number=found[0].number))
+
+    @app.route("/invoices/<number>")
+    def invoice_view(number):
+        invoice = store.invoices.get(number)
+        if invoice is None:
+            abort(404)
+        order = store.orders[invoice.order_id]
+        return render_template(
+            "invoice.html", invoice=invoice, order=order,
+            customer=store.customers[invoice.customer_id],
+            status=invoicing.invoice_status(invoice, clock.today()), active="orders")
+
+    def _calculation_inputs(source):
+        """Read calculator inputs from a form, query string or JSON body."""
+        getter = source.get
+        customer_id = getter("customer_id") or ""
+        customer = store.customers.get(int(customer_id)) if str(customer_id).isdigit() else None
+        placed = parse_date_loose(getter("date") or "") or clock.today()
+        ctx = PricingContext(
+            store=store, today=placed, ship_country=getter("country") or (customer.country if customer else "DE"),
+            shipping_method=getter("method") or "standard", coupon=(getter("coupon") or "").strip() or None,
+            mode=getter("mode") or "sale", redeem_points=helpers.safe_int(getter("points"), 0))
+        return customer, ctx
+
     return app
