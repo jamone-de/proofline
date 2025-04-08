@@ -32,4 +32,4 @@ LEGACY_SHIPPING_TABLE = {
 # Business constants that are (mostly) used from more than one place.
 B2B_LIST_DISCOUNT_BP = 800
 B2B_VOLUME_THRESHOLD_CENTS = 10_000_00
-MAX_LINE_QTY = 100
+MAX_LINE_QTY = 999
