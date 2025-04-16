@@ -16,7 +16,7 @@ RATE_TABLE = [
     (31500, (1990, 3990, 7990)),
 ]
 
-FREE_SHIPPING_CENTS = {"DE": 6000, "EU": 15000}
+FREE_SHIPPING_CENTS = {"DE": 7500, "EU": 15000}
 FREIGHT_BASE_CENTS = 3900
 FREIGHT_PER_10KG_CENTS = 1200
 
@@ -66,3 +66,11 @@ class CarrierUPS(Carrier):
 
     def handles(self, zone, weight_g):
         return True
+
+
+def pick_carrier(zone, weight_g):
+    for cls in sorted(Carrier.__subclasses__(), key=lambda c: c.priority):
+        carrier = cls()
+        if carrier.handles(zone, weight_g):
+            return carrier
+    return Carrier()
