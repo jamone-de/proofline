@@ -37,3 +37,115 @@ def render_invoice_text_v0(invoice):
         rows.append("%3d x %-30s %10s" % (line["qty"], line["description"][:30], format_money(line["net_cents"])))
     rows.append("TOTAL " + format_money(invoice.gross_cents))
     return "\n".join(rows)
+
+
+def generate_invoice(order, customer, store, today, kind="invoice", totals=None, lang=None):
+    """Turn an order (or a return calculation) into an Invoice and store it."""
+    if order.status in ("cancelled", "open") and kind == "invoice":
+        raise BrightshopError("order %s cannot be invoiced in status %s" % (order.number, order.status))
+    totals = totals if totals is not None else order.totals
+    if lang is None:
+        lang = "de" if order.ship_country in GERMAN_SPEAKING else "en"
+    b2b = is_b2b_customer(customer)
+    reverse = tax.is_reverse_charge(order.ship_country, customer)
+
+    lines = []
+    groups = {}
+    for src in totals["lines"]:
+        if reverse:
+            rate = 0
+        else:
+            rate = tax.tax_rate_bp(order.ship_country, src["vat_class"], src["category"])
+        description = src["name"]
+        if src["discount_cents"]:
+            if lang == "de":
+                description += " (abzgl. Rabatt)"
+            else:
+                description += " (discount applied)"
+        lines.append({"description": description, "sku": src["sku"], "qty": src["qty"],
+                      "unit_cents": src["unit_cents"], "discount_cents": src["discount_cents"],
+                      "net_cents": src["net_cents"], "rate_bp": rate})
+        groups[rate] = groups.get(rate, 0) + src["net_cents"]
+    dominant = max(groups.items(), key=lambda kv: (abs(kv[1]), kv[0]))[0]
+    if totals["shipping_cents"]:
+        lines.append({"description": "Versand" if lang == "de" else "Shipping", "sku": "",
+                      "qty": 1, "unit_cents": totals["shipping_cents"], "discount_cents": 0,
+                      "net_cents": totals["shipping_cents"], "rate_bp": dominant})
+        groups[dominant] += totals["shipping_cents"]
+    if totals["surcharge_cents"]:
+        lines.append({"description": "Mindermengenzuschlag" if lang == "de" else "Small order surcharge",
+                      "sku": "", "qty": 1, "unit_cents": totals["surcharge_cents"],
+                      "discount_cents": 0, "net_cents": totals["surcharge_cents"], "rate_bp": dominant})
+        groups[dominant] += totals["surcharge_cents"]
+
+    tax_groups = []
+    net_total = 0
+    tax_total = 0
+    for rate in sorted(groups, reverse=True):
+        group_tax = round_div(groups[rate] * rate, 10000)
+        tax_groups.append({"rate_bp": rate, "net_cents": groups[rate], "tax_cents": group_tax})
+        net_total += groups[rate]
+        tax_total += group_tax
+
+    terms = customer.payment_terms if customer is not None else "prepaid"
+    days = DUE_DAYS.get(terms, 0)
+    due = today + timedelta(days=days)
+    if days:
+        # due dates never fall on a weekend, push to Monday
+        if due.weekday() == 5:
+            due += timedelta(days=2)
+        elif due.weekday() == 6:
+            due += timedelta(days=1)
+
+    skonto_until = None
+    skonto_cents = 0
+    if config.ENABLE_SKONTO and kind == "invoice" and terms == "net30" and b2b:
+        skonto_until = today + timedelta(days=10)
+        skonto_cents = percent_bp(net_total + tax_total, 300)
+
+    notes = []
+    if reverse:
+        if lang == "de":
+            notes.append("Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge)")
+        else:
+            notes.append("Reverse charge: VAT to be accounted for by the recipient")
+    elif not tax.is_eu(order.ship_country):
+        if lang == "de":
+            notes.append("Steuerfreie Ausfuhrlieferung")
+        else:
+            notes.append("Tax free export delivery")
+    if kind == "credit_note":
+        notes.append("Gutschrift zu Bestellung %s" % order.number if lang == "de"
+                     else "Credit note for order %s" % order.number)
+    if skonto_cents:
+        notes.append("2%% skonto (%s) until %s" % (format_money(skonto_cents), skonto_until.isoformat()))
+
+    invoice = Invoice(
+        number=next_invoice_number(store, today.year, kind), order_id=order.id,
+        customer_id=order.customer_id, issued_on=today, due_on=due, kind=kind,
+        lines=lines, tax_groups=tax_groups, net_cents=net_total, tax_cents=tax_total,
+        gross_cents=net_total + tax_total, language=lang, notes=notes,
+        skonto_until=skonto_until, skonto_cents=skonto_cents,
+    )
+    footer = globals().get("_render_footer_" + lang) or _render_footer_en
+    invoice.footer = footer(invoice)
+    store.add_invoice(invoice)
+    return invoice
+
+
+def create_credit_note(order, customer, store, today, return_cart):
+    """Credit note for returned goods. Amounts are negative."""
+    ctx = PricingContext(store=store, today=today, ship_country=order.ship_country,
+                         shipping_method=order.shipping_method, mode="return")
+    totals = pricing.calculate_order_total(return_cart, customer, ctx)
+    return generate_invoice(order, customer, store, today, kind="credit_note", totals=totals)
+
+
+def record_payment(invoice, cents, paid_on):
+    invoice.paid_cents += cents
+    invoice.paid_on = paid_on
+    if invoice.skonto_until and paid_on <= invoice.skonto_until:
+        if invoice.paid_cents >= invoice.gross_cents - invoice.skonto_cents:
+            invoice.paid_cents = invoice.gross_cents
+            invoice.notes.append("skonto granted")
+    return invoice
