@@ -142,7 +142,7 @@ def calculate_order_total(cart, customer, ctx):
             usable = min(ctx.redeem_points, customer.loyalty_points)
             usable -= usable % 100
             net_now = sum(line["net_cents"] for line in lines)
-            max_value = percent_bp(net_now, 1500)
+            max_value = percent_bp(net_now, 2000)
             if usable > max_value:
                 usable = max_value - max_value % 100
             if usable > 0:
