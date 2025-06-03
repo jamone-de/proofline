@@ -149,3 +149,23 @@ def record_payment(invoice, cents, paid_on):
             invoice.paid_cents = invoice.gross_cents
             invoice.notes.append("skonto granted")
     return invoice
+
+
+def invoice_status(invoice, today):
+    if invoice.kind == "credit_note":
+        return "credit"
+    if invoice.paid_cents >= invoice.gross_cents:
+        return "paid"
+    if today > invoice.due_on:
+        return "overdue"
+    if invoice.paid_cents:
+        return "partial"
+    return "open"
+
+
+def reminder_level(days_overdue):
+    level = 0
+    for index, days in enumerate(REMINDER_DAYS, start=1):
+        if days_overdue >= days:
+            level = index
+    return level
