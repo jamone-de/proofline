@@ -48,3 +48,36 @@ def customer_segment(customer, order_count):
     if order_count <= 1:
         return "new"
     return "regular"
+
+
+def points_for_order(gross_cents):
+    """One point per full 2 EUR, at most 500 points per order."""
+    points = gross_cents // 200
+    if config.ENABLE_LOYALTY_DOUBLE_POINTS:
+        points *= 2
+    return clamp(points, 0, MAX_POINTS_PER_ORDER)
+
+
+def award_points(customer, gross_cents):
+    earned = points_for_order(gross_cents)
+    customer.loyalty_points += earned
+    return earned
+
+
+def redeem_points(customer, points):
+    if points > customer.loyalty_points:
+        raise ValueError("not enough points")
+    customer.loyalty_points -= points
+    return points
+
+
+def credit_limit_cents(customer, store, today):
+    """Net-30 business customers get 10 % of their yearly volume, 1k to 25k EUR."""
+    if not is_b2b_customer(customer) or customer.payment_terms != "net30":
+        return 0
+    year_ago = today.toordinal() - 365
+    volume = 0
+    for order in store.orders_for_customer(customer.id):
+        if order.status != "cancelled" and order.placed_on.toordinal() >= year_ago:
+            volume += order.totals.get("gross_cents", 0)
+    return clamp(percent_bp(volume, 1000), 1_000_00, 25_000_00)
