@@ -8,7 +8,7 @@ LOYALTY_BP = {"bronze": 0, "silver": 300, "gold": 500, "platinum": 800}
 LOYALTY_CAP_BP = {"bronze": 1500, "silver": 2000, "gold": 2500, "platinum": 2500}
 
 # (minimum quantity, discount in bp), checked from the top
-VOLUME_BREAKS = [(100, 1200), (25, 800), (10, 500)]
+VOLUME_BREAKS = [(100, 1500), (25, 1000), (10, 500)]
 
 BUNDLE_SETS = [
     {"name": "Photo starter", "skus": ("CAM-100", "MEM-64", "BAG-01"), "percent_bp": 1000},
