@@ -128,4 +128,47 @@ def create_app(store=None, today=None):
             mode=getter("mode") or "sale", redeem_points=helpers.safe_int(getter("points"), 0))
         return customer, ctx
 
+    @app.route("/calculator", methods=["GET", "POST"])
+    def calculator():
+        if request.method == "POST":
+            form = request.form
+            cart = helpers.parse_cart(form)
+        else:
+            form = {"customer_id": "1", "country": "DE", "method": "standard", "coupon": "",
+                    "mode": "sale", "points": "0", "date": clock.today().isoformat()}
+            cart = [{"sku": "CAM-100", "qty": 1}, {"sku": "MEM-64", "qty": 1}, {"sku": "BAG-01", "qty": 1}]
+        customer, ctx = _calculation_inputs(form)
+        result = None
+        error = None
+        try:
+            result = pricing.calculate_order_total(cart, customer, ctx)
+        except BrightshopError as exc:
+            error = str(exc)
+        return render_template(
+            "calculator.html", products=sorted(store.products.values(), key=lambda p: p.sku),
+            customers=sorted(store.customers.values(), key=lambda c: c.name), cart=cart,
+            form=form, result=result, error=error, countries=COUNTRIES, methods=METHODS,
+            active="calculator")
+
+    @app.route("/api/calculate", methods=["POST"])
+    def api_calculate():
+        body = request.get_json(silent=True) or {}
+        cart = body.get("cart") or []
+        customer, ctx = _calculation_inputs(body)
+        try:
+            return jsonify(pricing.calculate_order_total(cart, customer, ctx))
+        except BrightshopError as exc:
+            return jsonify({"error": str(exc)}), 422
+
+    @app.route("/api/invoices/<number>")
+    def api_invoice(number):
+        invoice = store.invoices.get(number)
+        if invoice is None:
+            abort(404)
+        return jsonify({"number": invoice.number, "kind": invoice.kind, "issued_on": invoice.issued_on.isoformat(),
+                        "due_on": invoice.due_on.isoformat(), "net_cents": invoice.net_cents,
+                        "tax_cents": invoice.tax_cents, "gross_cents": invoice.gross_cents,
+                        "tax_groups": invoice.tax_groups, "notes": invoice.notes,
+                        "skonto_cents": invoice.skonto_cents})
+
     return app
