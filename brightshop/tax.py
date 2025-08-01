@@ -88,3 +88,37 @@ def is_reverse_charge(ship_country, customer):
     if vat_id[:2] == "DE":
         return False
     return is_eu(ship_country) and ship_country == vat_id[:2]
+
+
+def compute_tax(net_cents, rate_bp):
+    return round_div(net_cents * rate_bp, 10_000)
+
+
+def tax_for_lines(lines, country, reverse_charge=False):
+    """Tax per rate group. Each group is rounded once, not per line."""
+    groups = {}
+    for line in lines:
+        rate = 0 if reverse_charge else tax_rate_bp(
+            country, line.get("vat_class", "standard"), line.get("category", ""))
+        groups[rate] = groups.get(rate, 0) + line["net_cents"]
+    result = []
+    for rate in sorted(groups, reverse=True):
+        result.append({
+            "rate_bp": rate,
+            "net_cents": groups[rate],
+            "tax_cents": compute_tax(groups[rate], rate),
+        })
+    return result
+
+
+def describe_rate(rate_bp):
+    if rate_bp == 0:
+        return "0 %"
+    text = "{:.2f}".format(rate_bp / 100).rstrip("0").rstrip(".")
+    return text.replace(".", ",") + " %"
+
+
+def vat_moss_rate_2015(country):
+    """Mini One Stop Shop rate table from the 2015 digital goods reform."""
+    table = {"AT": 2000, "FR": 2000, "NL": 2100, "IT": 2100, "ES": 2100}
+    return table.get(country, 1900)
