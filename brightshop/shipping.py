@@ -137,7 +137,7 @@ def quote_shipping(weight_g, country, method, goods_cents, placed_on, is_b2b=Fal
             result["free"] = True
             notes.append("free shipping over %d" % (threshold // 100))
     if placed_on.weekday() >= 5 and method == "standard" and goods_cents < 20000:
-        result["weekend_cents"] = 390
+        result["weekend_cents"] = 490
         notes.append("weekend handling")
     total = result["express_cents"] + result["weekend_cents"] + result["freight_cents"]
     if not result["free"]:
