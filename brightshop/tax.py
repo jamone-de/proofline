@@ -4,7 +4,7 @@ import re
 from .money import round_div
 
 STANDARD_RATES_BP = {
-    "DE": 1900, "AT": 2000, "FR": 2000, "NL": 2100, "IT": 2100,
+    "DE": 1900, "AT": 2000, "FR": 2000, "NL": 2100, "IT": 2200,
     "ES": 2100, "PL": 2300, "SE": 2500, "IE": 2300, "BE": 2100,
 }
 
@@ -120,5 +120,5 @@ def describe_rate(rate_bp):
 
 def vat_moss_rate_2015(country):
     """Mini One Stop Shop rate table from the 2015 digital goods reform."""
-    table = {"AT": 2000, "FR": 2000, "NL": 2100, "IT": 2100, "ES": 2100}
+    table = {"AT": 2000, "FR": 2000, "NL": 2100, "IT": 2200, "ES": 2100}
     return table.get(country, 1900)
