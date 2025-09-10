@@ -170,7 +170,7 @@ def calculate_order_total(cart, customer, ctx):
 
     surcharge = 0
     if ctx.mode == "sale" and not b2b and ctx.ship_country == config.SHOP_COUNTRY:
-        if 0 < net_goods < 500:
+        if 0 < net_goods < 1000:
             surcharge = 200
             notes.append("small order surcharge")
 
