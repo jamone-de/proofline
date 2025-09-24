@@ -171,4 +171,40 @@ def create_app(store=None, today=None):
                         "tax_groups": invoice.tax_groups, "notes": invoice.notes,
                         "skonto_cents": invoice.skonto_cents})
 
+    @app.route("/api/kpis")
+    def api_kpis():
+        return jsonify(reporting.kpis(store, clock.today()))
+
+    @app.route("/customers")
+    def customer_list():
+        query = request.args.get("q", "")
+        rows = customers.search_customers(store, query)
+        counts = {c.id: len(store.orders_for_customer(c.id)) for c in rows}
+        segments = {c.id: customers.customer_segment(c, counts[c.id]) for c in rows}
+        return render_template("customers.html", rows=rows, counts=counts, segments=segments,
+                               q=query, active="customers")
+
+    @app.route("/customers/<int:customer_id>")
+    def customer_detail(customer_id):
+        customer = store.customers.get(customer_id)
+        if customer is None:
+            abort(404)
+        orders_ = sorted(store.orders_for_customer(customer_id), key=lambda o: o.id, reverse=True)
+        return render_template(
+            "customer_detail.html", customer=customer, orders=orders_,
+            invoices=store.invoices_for_customer(customer_id),
+            segment=customers.customer_segment(customer, len(orders_)),
+            credit=customers.credit_limit_cents(customer, store, clock.today()),
+            tier_review=customers.recompute_tier(customer),
+            b2b=customers.is_b2b_customer(customer), today=clock.today(),
+            status_of=invoicing.invoice_status, active="customers")
+
+    def _report_from_args():
+        group_by = request.args.get("group_by", "month")
+        start = parse_date_loose(request.args.get("start", "")) or date(clock.today().year, 1, 1)
+        end = parse_date_loose(request.args.get("end", "")) or clock.today()
+        if group_by not in REPORT_GROUPS:
+            abort(400)
+        return group_by, start, end, reporting.build_sales_report(store, start, end, group_by=group_by)
+
     return app
