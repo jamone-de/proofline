@@ -169,3 +169,40 @@ def reminder_level(days_overdue):
         if days_overdue >= days:
             level = index
     return level
+
+
+def reminder_fee(level, is_b2b):
+    """Fee in cents. Level 3 is where it gets expensive."""
+    if level <= 1:
+        return 0
+    if is_b2b:
+        return 0 if level == 2 else 4000
+    return 500 if level == 2 else 1000
+
+
+def reminder_interest(open_cents, days_overdue, level, is_b2b):
+    """Default interest, only charged from the third reminder on."""
+    if level < 3:
+        return 0
+    rate_bp = 1200 if is_b2b else 800
+    return round_div(open_cents * rate_bp * days_overdue, 10000 * 365)
+
+
+def compute_reminder(invoice, customer, today):
+    """What should be sent for this invoice today? None if nothing."""
+    if invoice.kind != "invoice" or invoice.paid_cents >= invoice.gross_cents:
+        return None
+    overdue = days_between(invoice.due_on, today)
+    if overdue <= 0:
+        return None
+    level = reminder_level(overdue)
+    if level == 0 or level <= len(invoice.reminders):
+        return None
+    b2b = is_b2b_customer(customer)
+    open_cents = invoice.gross_cents - invoice.paid_cents
+    return {
+        "level": level, "days_overdue": overdue,
+        "fee_cents": reminder_fee(level, b2b),
+        "interest_cents": reminder_interest(open_cents, overdue, level, b2b),
+        "escalate": level >= 3,
+    }
