@@ -21,7 +21,7 @@ COUPONS = {
                  "starts": "2026-06-01", "expires": "2026-08-31"},
     "AUTUMN15": {"rule": "seasonal", "percent_bp": 1500, "min_cents": 4000,
                  "starts": "2026-09-01", "expires": "2026-10-31"},
-    "SAVE5": {"rule": "fixed", "fixed_cents": 300, "min_cents": 2500},
+    "SAVE5": {"rule": "fixed", "fixed_cents": 500, "min_cents": 2500},
     "FREESHIP": {"rule": "freeship"},
     "VIP20": {"rule": "percent", "percent_bp": 2000, "min_cents": 10000},
 }
