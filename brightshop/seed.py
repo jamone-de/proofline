@@ -115,3 +115,78 @@ def _status_for(age_days, rng):
     if roll < 9:
         return "returned"
     return "delivered"
+
+
+def build_orders(store, today, count=110, seed=20260915):
+    rng = Lcg(seed)
+    skus = [p[0] for p in PRODUCTS if p[7]]
+    favourites = ["CAM-100", "MEM-64", "BAG-01", "LMP-200", "CBL-USB2", "SPK-BT1", "BK-LIGHT"]
+    start = date(2025, 10, 2)
+    span = (today - start).days
+    cids = sorted(store.customers)
+    previous = start
+    for i in range(count):
+        placed = start + timedelta(days=span * (i + 1) * (3 * count - (i + 1)) // (2 * count * count) - rng.below(2))
+        placed = min(max(placed, previous), today)
+        previous = placed
+        customer = store.customers[rng.pick(cids)]
+        cart = []
+        for _ in range(1 + rng.below(3)):
+            sku = rng.pick(favourites) if rng.chance(45) else rng.pick(skus)
+            qty = 1 + rng.below(3)
+            if customer.is_business and rng.chance(30):
+                qty = rng.pick([10, 12, 25, 30])
+            cart.append({"sku": sku, "qty": qty})
+        if rng.chance(20):
+            cart.extend([{"sku": "CAM-100", "qty": 1}, {"sku": "MEM-64", "qty": 1},
+                         {"sku": "BAG-01", "qty": 1}])
+        coupon = rng.pick(COUPON_POOL) if rng.chance(35) else ""
+        method = "standard"
+        if rng.chance(15):
+            method = "express"
+        elif customer.country == "DE" and rng.chance(10):
+            method = "pickup"
+        points = 0
+        if customer.tier != "bronze" and customer.loyalty_points >= 500 and rng.chance(12):
+            points = 500
+        ctx = PricingContext(store=store, today=placed, ship_country=customer.country,
+                             shipping_method=method, coupon=coupon or None, redeem_points=points)
+        try:
+            totals = pricing.calculate_order_total(cart, customer, ctx)
+        except PricingError:
+            ctx = PricingContext(store=store, today=placed, ship_country=customer.country,
+                                 shipping_method=method)
+            totals = pricing.calculate_order_total(cart, customer, ctx)
+        status = _status_for((today - placed).days, rng)
+        order = Order(id=store.next_order_id(), number="", customer_id=customer.id,
+                      placed_on=placed, lines=totals["lines"], coupon=ctx.coupon,
+                      shipping_method=method, ship_country=customer.country,
+                      status=status, totals=totals)
+        order.number = "ORD-%d" % order.id
+        store.add_order(order)
+
+
+def build_invoices(store, today, seed=77):
+    rng = Lcg(seed)
+    for order in sorted(store.orders.values(), key=lambda o: o.id):
+        if order.status in ("open", "cancelled"):
+            continue
+        customer = store.customers[order.customer_id]
+        invoice = invoicing.generate_invoice(order, customer, store, order.placed_on)
+        age = (today - invoice.due_on).days
+        if customer.payment_terms == "prepaid":
+            invoicing.record_payment(invoice, invoice.gross_cents, order.placed_on)
+        elif age < 0:
+            if rng.chance(30):
+                pay_day = order.placed_on + timedelta(days=3 + rng.below(8))
+                invoicing.record_payment(invoice, invoice.gross_cents, pay_day)
+        elif rng.chance(100 if age > 75 else 90 if age > 35 else 55):
+            pay_day = invoice.due_on + timedelta(days=rng.below(12) - 8)
+            invoicing.record_payment(invoice, invoice.gross_cents, min(pay_day, today))
+        if order.status == "returned":
+            return_day = order.placed_on + timedelta(days=9)
+            wanted = [{"sku": line["sku"], "qty": 1} for line in order.lines]
+            decision = returns.evaluate_return(order, customer, store, return_day, wanted)
+            if decision["accepted"]:
+                invoicing.create_credit_note(order, customer, store, return_day,
+                                             returns.refund_cart(decision)[:1])
