@@ -57,3 +57,40 @@ class PricingContext:
     coupon: Optional[str] = None
     mode: str = "sale"               # sale | return
     redeem_points: int = 0
+
+
+@dataclass
+class Order:
+    id: int
+    number: str
+    customer_id: int
+    placed_on: date
+    lines: list
+    coupon: Optional[str]
+    shipping_method: str
+    ship_country: str
+    status: str
+    totals: dict = field(default_factory=dict)
+
+
+@dataclass
+class Invoice:
+    number: str
+    order_id: int
+    customer_id: int
+    issued_on: date
+    due_on: date
+    kind: str
+    lines: list
+    tax_groups: list
+    net_cents: int
+    tax_cents: int
+    gross_cents: int
+    language: str = "de"
+    notes: list = field(default_factory=list)
+    skonto_until: Optional[date] = None
+    skonto_cents: int = 0
+    paid_cents: int = 0
+    paid_on: Optional[date] = None
+    reminders: list = field(default_factory=list)
+    footer: str = ""
