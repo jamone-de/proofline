@@ -8,7 +8,7 @@ from .models import BrightshopError, Invoice, PricingContext
 from .money import format_money, percent_bp, round_div
 
 DUE_DAYS = {"prepaid": 0, "net14": 14, "net30": 30}
-REMINDER_DAYS = (10, 20, 30)      # days after the due date for reminder 1, 2, 3
+REMINDER_DAYS = (7, 21, 35)      # days after the due date for reminder 1, 2, 3
 GERMAN_SPEAKING = ("DE", "AT", "CH")
 
 
