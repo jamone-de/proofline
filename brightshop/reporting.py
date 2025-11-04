@@ -203,3 +203,39 @@ def _export_csv(report):
                                format_money(row["net_cents"], False),
                                format_money(row["gross_cents"], False)]))
     return "\n".join(lines) + "\n"
+
+
+@exporter("json")
+def _export_json(report):
+    import json
+    body = {"group_by": report["group_by"], "rows": report["rows"],
+            "total_net_cents": report["total_net_cents"]}
+    return json.dumps(body, sort_keys=True)
+
+
+def export_report(report, fmt):
+    handler = EXPORTERS.get(fmt)
+    if handler is None:
+        raise ValueError("no exporter for %s" % fmt)
+    return handler(report)
+
+
+def export_xml_report(report):
+    """XML export for the accountant. See docs/accounting-export.md."""
+    rows = "".join("<row key=\"%s\" net=\"%d\"/>" % (r["key"], r["net_cents"]) for r in report["rows"])
+    return "<report>%s</report>" % rows
+
+
+def overdue_reminders(store, today):
+    """Reminders that are due today, as (invoice, reminder) pairs."""
+    due = []
+    for inv in sorted(store.invoices.values(), key=lambda i: i.number):
+        customer = store.customers[inv.customer_id]
+        reminder = invoicing.compute_reminder(inv, customer, today)
+        if reminder:
+            due.append((inv, reminder))
+    return due
+
+
+def batch_rows(rows, size=50):
+    return list(chunked(rows, size))
