@@ -6,7 +6,7 @@ from .money import percent_bp
 BACKORDER_LIMIT = -5
 BACKORDER_CATEGORIES = {"accessories"}
 PACK_SIZE = 5
-COST_RATIO_BP = 5500          # purchase cost is 60 % of the list price
+COST_RATIO_BP = 6000          # purchase cost is 60 % of the list price
 
 REORDER_POINTS = {"electronics": 5, "audio": 6, "home": 8, "kitchen": 8,
                   "books": 10, "accessories": 20, "hygiene": 12, "digital": 0,
