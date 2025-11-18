@@ -81,3 +81,23 @@ def credit_limit_cents(customer, store, today):
         if order.status != "cancelled" and order.placed_on.toordinal() >= year_ago:
             volume += order.totals.get("gross_cents", 0)
     return clamp(percent_bp(volume, 1000), 1_000_00, 25_000_00)
+
+
+def search_customers(store, query):
+    # TODO: offer merge_customers_legacy for duplicate hits
+    query = (query or "").strip().lower()
+    hits = []
+    for customer in store.customers.values():
+        if not query or query in customer.name.lower() or query in customer.email.lower():
+            hits.append(customer)
+    return sorted(hits, key=lambda c: c.name.lower())
+
+
+def merge_customers_legacy(store, keep_id, drop_id):
+    keep = store.customers[keep_id]
+    drop = store.customers.pop(drop_id)
+    keep.lifetime_cents += drop.lifetime_cents
+    keep.loyalty_points += drop.loyalty_points
+    for order in store.orders_for_customer(drop_id):
+        order.customer_id = keep_id
+    return keep
