@@ -190,3 +190,14 @@ def build_invoices(store, today, seed=77):
             if decision["accepted"]:
                 invoicing.create_credit_note(order, customer, store, return_day,
                                              returns.refund_cart(decision)[:1])
+
+
+def build_store(today=None):
+    """The whole demo shop. `today` may be a date or an ISO string."""
+    clock = FixedClock(today or config.DEFAULT_TODAY)
+    store = Store()
+    build_products(store)
+    build_customers(store)
+    build_orders(store, clock.today())
+    build_invoices(store, clock.today())
+    return store
