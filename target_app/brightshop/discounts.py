@@ -11,7 +11,7 @@ LOYALTY_CAP_BP = {"bronze": 1500, "silver": 2000, "gold": 2500, "platinum": 2500
 VOLUME_BREAKS = [(100, 1500), (25, 1000), (10, 500)]
 
 BUNDLE_SETS = [
-    {"name": "Photo starter", "skus": ("CAM-100", "MEM-64", "BAG-01"), "percent_bp": 1000},
+    {"name": "Photo starter", "skus": ("CAM-100", "MEM-64", "BAG-01"), "percent_bp": 1200},
     {"name": "Desk light kit", "skus": ("LMP-200", "CBL-USB2"), "percent_bp": 800},
 ]
 
