@@ -177,7 +177,7 @@ def reminder_fee(level, is_b2b):
         return 0
     if is_b2b:
         return 0 if level == 2 else 4000
-    return 500 if level == 2 else 1000
+    return 500 if level == 2 else 1500
 
 
 def reminder_interest(open_cents, days_overdue, level, is_b2b):
