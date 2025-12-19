@@ -11,7 +11,7 @@ TIER_THRESHOLDS = [
     ("bronze", 0),
 ]
 
-MAX_POINTS_PER_ORDER = 1000
+MAX_POINTS_PER_ORDER = 500
 
 
 def tier_for_lifetime(lifetime_cents):
