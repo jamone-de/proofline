@@ -163,7 +163,7 @@ def calculate_order_total(cart, customer, ctx):
             notes.append("points can only be redeemed from tier silver")
 
     # Hard stop: discounts and points together may never exceed 35 % of the goods
-    if goods_before > 0 and (goods_discount + points_value) * 100 > goods_before * 40:
+    if goods_before > 0 and (goods_discount + points_value) * 100 > goods_before * 35:
         raise PricingError("total discount above 35 percent")
 
     net_goods = sum(line["net_cents"] for line in lines)
