@@ -207,4 +207,39 @@ def create_app(store=None, today=None):
             abort(400)
         return group_by, start, end, reporting.build_sales_report(store, start, end, group_by=group_by)
 
+    @app.route("/reports")
+    def reports():
+        group_by, start, end, report = _report_from_args()
+        return render_template(
+            "reports.html", report=report, group_by=group_by, groups=REPORT_GROUPS,
+            start=start, end=end, categories=reporting.category_breakdown(store, start, end),
+            forecast=reporting.tax_forecast(store),
+            receivables=reporting.open_receivables(store, clock.today()), active="reports")
+
+    @app.route("/reports/export.<fmt>")
+    def report_export(fmt):
+        group_by, start, end, report = _report_from_args()
+        try:
+            body = reporting.export_report(report, fmt)
+        except ValueError:
+            abort(404)
+        return Response(body, mimetype="text/csv" if fmt == "csv" else "application/json")
+
+    @app.route("/inventory")
+    def inventory_view():
+        rows = []
+        for sku, product in sorted(store.products.items()):
+            rows.append({"product": product, "stock": inventory.available(store, sku),
+                         "status": inventory.stock_status(store, sku),
+                         "bin": inventory.bin_for(sku, product.category)})
+        status = request.args.get("status", "")
+        if status:
+            rows = [r for r in rows if r["status"] == status]
+        return render_template(
+            "inventory.html", rows=rows, status=status,
+            value=inventory.stock_value_cents(store),
+            reorder=inventory.reorder_suggestions(store, clock.today()),
+            counts={s: len([1 for sku in store.products if inventory.stock_status(store, sku) == s])
+                    for s in ("ok", "low", "out", "unlimited")}, active="inventory")
+
     return app
