@@ -44,7 +44,7 @@ def kpis(store, today):
     prev_total = sum(o.totals["net_cents"] for o in previous)
     growth = None
     if prev_total:
-        growth = (cur_total - prev_total) * 100 // prev_total
+        growth = round((cur_total - prev_total) * 1000 / prev_total) / 10
     receivables = open_receivables(store, today)
     low_stock = [sku for sku in store.products if inventory.stock_status(store, sku) in ("low", "out")]
     return {
