@@ -59,7 +59,7 @@ def kpis(store, today):
     }
 
 
-def revenue_by_week(store, today, weeks=8):
+def revenue_by_week(store, today, weeks=12):
     """Net revenue per ISO week for the last `weeks` weeks, oldest first."""
     buckets = []
     monday = today - timedelta(days=today.weekday())

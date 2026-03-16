@@ -10,7 +10,7 @@ from .models import PricingError
 from .money import percent_bp, round_div
 
 PROMO_PRICES = {
-    "LMP-200": {"price_cents": 3990, "starts": "2026-09-01", "ends": "2026-08-31"},
+    "LMP-200": {"price_cents": 3990, "starts": "2026-09-01", "ends": "2026-09-30"},
     "CBL-USB2": {"price_cents": 490, "starts": "2026-08-15", "ends": "2026-10-15"},
     "SPK-BT1": {"price_cents": 5990, "starts": "2026-01-01", "ends": "2026-01-31"},
 }
