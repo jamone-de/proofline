@@ -167,7 +167,7 @@ def apply_discounts(lines, customer, coupon_code, ctx):
 
     # 5) coupon on what is left
     if coupon is not None:
-        base = goods
+        base = goods - summary["volume_cents"] - summary["bundle_cents"] - summary["loyalty_cents"]
         if summary["volume_cents"] and not config.ENABLE_COUPON_STACKING:
             summary["notes"].append("coupon not combinable with volume discount")
         else:
