@@ -101,7 +101,7 @@ def generate_invoice(order, customer, store, today, kind="invoice", totals=None,
     skonto_cents = 0
     if config.ENABLE_SKONTO and kind == "invoice" and terms == "net30" and b2b:
         skonto_until = today + timedelta(days=10)
-        skonto_cents = percent_bp(net_total + tax_total, 300)
+        skonto_cents = percent_bp(net_total + tax_total, 200)
 
     notes = []
     if reverse:
