@@ -323,3 +323,5 @@ label.field > :is(input, select) { margin-top: 6px; color: var(--text); font-siz
   .content { padding: 0; max-width: none; }
   .paper { border: 0; box-shadow: none; padding: 0; max-width: none; }
 }
+
+.mail { margin: 10px 0 0; padding: 12px 14px; background: var(--surface-2); border: 1px solid var(--border-soft); border-radius: 8px; font: 400 13px/1.55 "IBM Plex Mono", ui-monospace, Consolas, monospace; white-space: pre-wrap; color: var(--text); }
