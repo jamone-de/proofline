@@ -63,6 +63,14 @@ def _cmd_report(_args: argparse.Namespace) -> None:
     print(f"Report available at: {out}")
 
 
+def _cmd_serve(args: argparse.Namespace) -> None:
+    """Start the Proofline web dashboard."""
+    from proofline.web.app import create_app
+    app = create_app()
+    print(f"Starting Proofline dashboard on http://127.0.0.1:{args.port}")
+    app.run(host="127.0.0.1", port=args.port, debug=args.debug)
+
+
 # ---------------------------------------------------------------------------
 # Argument parser
 # ---------------------------------------------------------------------------
@@ -96,6 +104,11 @@ def _build_parser() -> argparse.ArgumentParser:
     # report
     sub.add_parser("report", help="Generate docs/index.html verification certificate.")
 
+    # serve
+    serve_p = sub.add_parser("serve", help="Start the web dashboard.")
+    serve_p.add_argument("--port", type=int, default=5050, help="Port to listen on (default: 5050).")
+    serve_p.add_argument("--debug", action="store_true", help="Enable Flask debug mode.")
+
     return parser
 
 
@@ -108,6 +121,7 @@ def main() -> None:
         "scan": _cmd_scan,
         "propose": _cmd_propose,
         "report": _cmd_report,
+        "serve": _cmd_serve,
     }
     dispatch[args.command](args)
 

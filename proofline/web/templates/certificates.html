@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block title %}Certificates{% endblock %}
+{% block heading %}Change Certificates{% endblock %}
+
+{% block body %}
+{% if certs %}
+  {% for c in certs %}
+  {% set ch = c.change %}
+  {% set vd = c.verdict.details if c.verdict else {} %}
+  {% set _verdict_str = vd.get('verdict', '') %}
+  {% if _verdict_str == 'accept' %}{% set color = 'green' %}
+  {% elif _verdict_str == 'reject' %}{% set color = 'red' %}
+  {% else %}{% set color = 'yellow' %}{% endif %}
+  <div class="cert-card">
+    <div class="cert-header">
+      <div class="cert-title">
+        <span class="cert-action-label">
+          {% if ch.action == 'propose_delete_applied' %}Delete{% else %}Refactor{% endif %}
+        </span>
+        <code class="mono cert-symbol">{{ ch.details.symbol }}</code>
+        <span class="cert-in">in</span>
+        <code class="mono cert-module">{{ ch.details.module }}</code>
+      </div>
+      <span class="pill pill-{{ color }} cert-verdict">{{ vd.get('verdict', 'unknown')|upper }}</span>
+    </div>
+
+    <div class="cert-meta">
+      <table class="meta-table">
+        <tr>
+          <td class="meta-key">Branch</td>
+          <td><code class="mono">{{ ch.details.branch }}</code></td>
+        </tr>
+        <tr>
+          <td class="meta-key">Committed</td>
+          <td>{{ ch.details.committed }}</td>
+        </tr>
+        <tr>
+          <td class="meta-key">Tests before / after</td>
+          <td class="tabnum">{{ vd.get('tests_before', '-') }} / {{ vd.get('tests_after', '-') }}</td>
+        </tr>
+        <tr>
+          <td class="meta-key">Coverage before / after</td>
+          <td class="tabnum">{{ vd.get('coverage_before', '-') }} / {{ vd.get('coverage_after', '-') }}</td>
+        </tr>
+        <tr>
+          <td class="meta-key">Edge cases run</td>
+          <td class="tabnum">{{ vd.get('new_edge_cases_run', '-') }}</td>
+        </tr>
+      </table>
+    </div>
+
+    {% set failed = vd.get('edge_cases_failed', []) %}
+    <div class="cert-risks">
+      <div class="risk-label">Known risks</div>
+      {% if failed %}
+        <ul class="risk-list">
+          {% for f in failed %}
+          <li><code class="mono">{{ f.args }}</code> &rarr; before: <code>{{ f.before }}</code>, after: <code>{{ f.after }}</code></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <span class="no-risks">No known risks.</span>
+      {% endif %}
+    </div>
+
+    <div class="cert-footer">
+      <span>Timestamp: <code class="mono">{{ ch.timestamp }}</code></span>
+      <span>Hash: <code class="mono">{{ ch.hash[:32] }}&hellip;</code></span>
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+<div class="empty-state">
+  <p>No verified changes yet. Use <a href="{{ url_for('propose_form') }}">Propose Change</a>
+  or run <code>python main.py propose</code> from the CLI.</p>
+</div>
+{% endif %}
+{% endblock %}

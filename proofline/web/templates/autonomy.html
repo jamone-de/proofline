@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Autonomy Map{% endblock %}
+{% block heading %}Autonomy Map{% endblock %}
+
+{% block header_actions %}
+<div class="toolbar">
+  <div class="filter-group">
+    <span class="filter-label">Filter:</span>
+    <a href="{{ url_for('autonomy') }}"
+       class="filter-pill {% if not color_filter %}active{% endif %}">All</a>
+    <a href="{{ url_for('autonomy', color='GREEN', sort=sort_by, dir=sort_dir) }}"
+       class="filter-pill pill-green {% if color_filter == 'GREEN' %}active{% endif %}">GREEN</a>
+    <a href="{{ url_for('autonomy', color='YELLOW', sort=sort_by, dir=sort_dir) }}"
+       class="filter-pill pill-yellow {% if color_filter == 'YELLOW' %}active{% endif %}">YELLOW</a>
+    <a href="{{ url_for('autonomy', color='RED', sort=sort_by, dir=sort_dir) }}"
+       class="filter-pill pill-red {% if color_filter == 'RED' %}active{% endif %}">RED</a>
+  </div>
+</div>
+{% endblock %}
+
+{% block body %}
+{% macro sort_link(col, label) %}
+  {% set next_dir = 'asc' if (sort_by == col and sort_dir == 'asc') else 'desc' %}
+  <a href="{{ url_for('autonomy', color=color_filter, sort=col, dir=next_dir) }}"
+     class="sort-header {% if sort_by == col %}sort-active{% endif %}">
+    {{ label }}
+    {% if sort_by == col %}
+      {{ '&#9650;' if sort_dir == 'asc' else '&#9660;' }}
+    {% endif %}
+  </a>
+{% endmacro %}
+
+{% if modules %}
+<div class="table-wrap">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th>{{ sort_link('module', 'Module') }}</th>
+        <th>Risk</th>
+        <th class="num-col">{{ sort_link('complexity', 'Complexity') }}</th>
+        <th class="num-col">{{ sort_link('coverage', 'Coverage') }}</th>
+        <th class="num-col">{{ sort_link('commits', 'Commits') }}</th>
+        <th class="num-col">Days since change</th>
+        <th>Reason</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in modules %}
+      {% set cov = m.coverage %}
+      {% set cov_str = '%.1f%%' % cov if cov is number else cov %}
+      <tr>
+        <td><code class="mono">{{ m.module }}</code></td>
+        <td><span class="pill pill-{{ m.color|lower }}">{{ m.color }}</span></td>
+        <td class="num-col">{{ m.complexity }}</td>
+        <td class="num-col">{{ cov_str }}</td>
+        <td class="num-col">{{ m.commit_count }}</td>
+        <td class="num-col">{{ m.days_since_last_change }}</td>
+        <td class="reason-col">{{ m.reason }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No modules found. Run <code>python main.py scan</code> first.</p>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block heading %}Dashboard{% endblock %}
+
+{% block body %}
+<div class="kpi-grid">
+  <div class="kpi-card">
+    <div class="kpi-value">{{ summary.total }}</div>
+    <div class="kpi-label">Modules scanned</div>
+  </div>
+  <div class="kpi-card kpi-green">
+    <div class="kpi-value">{{ summary.green }}</div>
+    <div class="kpi-label">GREEN</div>
+  </div>
+  <div class="kpi-card kpi-yellow">
+    <div class="kpi-value">{{ summary.yellow }}</div>
+    <div class="kpi-label">YELLOW</div>
+  </div>
+  <div class="kpi-card kpi-red">
+    <div class="kpi-value">{{ summary.red }}</div>
+    <div class="kpi-label">RED</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-value">{{ summary.changes }}</div>
+    <div class="kpi-label">Changes applied</div>
+  </div>
+  <div class="kpi-card">
+    <div class="kpi-value">{{ summary.events }}</div>
+    <div class="kpi-label">Ledger events</div>
+  </div>
+</div>
+
+<div class="status-row">
+  {% if summary.chain_ok %}
+    <span class="chain-badge chain-ok">&#10003; Audit chain intact</span>
+  {% else %}
+    <span class="chain-badge chain-broken">&#10007; Chain broken at index {{ summary.broken_idx }}</span>
+  {% endif %}
+</div>
+
+<div class="section-grid">
+  <div class="panel">
+    <div class="panel-header">Risk Distribution</div>
+    <div class="panel-body">
+      <div class="risk-bar-wrap">
+        {% set total = summary.total if summary.total > 0 else 1 %}
+        <div class="risk-bar">
+          <div class="risk-seg seg-green"  style="width:{{ (summary.green  / total * 100)|round(1) }}%" title="GREEN {{ summary.green }}"></div>
+          <div class="risk-seg seg-yellow" style="width:{{ (summary.yellow / total * 100)|round(1) }}%" title="YELLOW {{ summary.yellow }}"></div>
+          <div class="risk-seg seg-red"    style="width:{{ (summary.red    / total * 100)|round(1) }}%" title="RED {{ summary.red }}"></div>
+        </div>
+        <div class="risk-legend">
+          <span class="pill pill-green">GREEN {{ summary.green }}</span>
+          <span class="pill pill-yellow">YELLOW {{ summary.yellow }}</span>
+          <span class="pill pill-red">RED {{ summary.red }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-header">Quick Actions</div>
+    <div class="panel-body quick-actions">
+      <a href="{{ url_for('autonomy') }}" class="action-link">View autonomy map &rarr;</a>
+      <a href="{{ url_for('audit') }}" class="action-link">Inspect audit chain &rarr;</a>
+      <a href="{{ url_for('certificates') }}" class="action-link">View certificates &rarr;</a>
+      <a href="{{ url_for('propose_form') }}" class="action-link action-link-accent">Propose a change &rarr;</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

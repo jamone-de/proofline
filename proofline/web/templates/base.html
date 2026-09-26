@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Proofline{% endblock %} - Proofline</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+<body>
+  <nav class="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-mark">PL</span>
+      <span class="brand-name">Proofline</span>
+    </div>
+    <ul class="nav-list">
+      <li class="nav-item {% if active == 'dashboard' %}active{% endif %}">
+        <a href="{{ url_for('dashboard') }}">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 6a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zm10 0a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+          Dashboard
+        </a>
+      </li>
+      <li class="nav-item {% if active == 'autonomy' %}active{% endif %}">
+        <a href="{{ url_for('autonomy') }}">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 5a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/></svg>
+          Autonomy Map
+        </a>
+      </li>
+      <li class="nav-item {% if active == 'audit' %}active{% endif %}">
+        <a href="{{ url_for('audit') }}">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z" clip-rule="evenodd"/></svg>
+          Audit Chain
+        </a>
+      </li>
+      <li class="nav-item {% if active == 'certificates' %}active{% endif %}">
+        <a href="{{ url_for('certificates') }}">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+          Certificates
+        </a>
+      </li>
+      <li class="nav-item {% if active == 'propose' %}active{% endif %}">
+        <a href="{{ url_for('propose_form') }}">
+          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/></svg>
+          Propose Change
+        </a>
+      </li>
+    </ul>
+    <div class="sidebar-footer">
+      <form method="POST" action="{{ url_for('scan_trigger') }}">
+        <button type="submit" class="btn-rescan">Re-scan</button>
+      </form>
+    </div>
+  </nav>
+
+  <main class="content">
+    <header class="page-header">
+      <h1>{% block heading %}{% endblock %}</h1>
+      {% block header_actions %}{% endblock %}
+    </header>
+    <div class="page-body">
+      {% block body %}{% endblock %}
+    </div>
+  </main>
+</body>
+</html>

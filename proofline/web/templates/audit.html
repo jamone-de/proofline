@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Audit Chain{% endblock %}
+{% block heading %}Audit Chain{% endblock %}
+
+{% block body %}
+<div class="chain-status-bar">
+  {% if chain_ok %}
+    <span class="chain-badge chain-ok">&#10003; Chain intact - {{ records|length }} event{{ 's' if records|length != 1 }}</span>
+  {% else %}
+    <span class="chain-badge chain-broken">&#10007; Chain broken at index {{ broken_idx }}</span>
+  {% endif %}
+</div>
+
+{% if records %}
+<div class="table-wrap">
+  <table class="data-table audit-table">
+    <thead>
+      <tr>
+        <th class="num-col">#</th>
+        <th>Timestamp</th>
+        <th>Actor</th>
+        <th>Action</th>
+        <th>Hash (prefix)</th>
+        <th>Prev (prefix)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in records %}
+      <tr {% if not chain_ok and loop.index0 == broken_idx %}class="row-broken"{% endif %}>
+        <td class="num-col">{{ loop.index0 }}</td>
+        <td class="ts-col">{{ r.timestamp }}</td>
+        <td><code class="mono">{{ r.actor }}</code></td>
+        <td><code class="mono">{{ r.action }}</code></td>
+        <td><code class="mono hash-cell">{{ r.hash[:16] }}&hellip;</code></td>
+        <td><code class="mono hash-cell">{{ r.prev_hash[:16] }}&hellip;</code></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-state">
+  <p>No ledger events yet. Run <code>python main.py scan</code> or propose a change.</p>
+</div>
+{% endif %}
+{% endblock %}

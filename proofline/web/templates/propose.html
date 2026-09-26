@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Propose Change{% endblock %}
+{% block heading %}Propose Change{% endblock %}
+
+{% block body %}
+<div class="propose-layout">
+  <div class="propose-form-col">
+    <div class="panel">
+      <div class="panel-header">Change Request</div>
+      <div class="panel-body">
+        <form id="propose-form" class="form-stack">
+          <div class="form-field">
+            <label for="module-input">Module path</label>
+            <select id="module-input" name="module" class="form-select mono">
+              <option value="">- select a module -</option>
+              {% for m in modules %}
+              <option value="{{ m.module }}" data-color="{{ m.color }}">
+                {{ m.module }} [{{ m.color }}]
+              </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-field" id="color-hint" style="display:none;">
+            <span id="color-indicator"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="symbol-input">Symbol name</label>
+            <input type="text" id="symbol-input" name="symbol"
+                   class="form-input mono" placeholder="function_name" autocomplete="off">
+          </div>
+
+          <div class="form-field">
+            <label>Action</label>
+            <div class="radio-group">
+              <label class="radio-label">
+                <input type="radio" name="action" value="delete" checked> Delete
+              </label>
+              <label class="radio-label">
+                <input type="radio" name="action" value="refactor"> Refactor
+              </label>
+            </div>
+          </div>
+
+          <div class="form-field" id="new-code-field" style="display:none;">
+            <label for="new-code-input">Replacement code</label>
+            <textarea id="new-code-input" name="new_code" class="form-textarea mono"
+                      rows="10" placeholder="def my_function(...):\n    ..."></textarea>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="submit-btn">Submit Proposal</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="propose-result-col">
+    <div class="panel" id="result-panel" style="display:none;">
+      <div class="panel-header">Verdict</div>
+      <div class="panel-body" id="result-body"></div>
+    </div>
+    <div class="panel propose-guide">
+      <div class="panel-header">Gating Rules</div>
+      <div class="panel-body">
+        <ul class="rule-list">
+          <li><span class="pill pill-green">GREEN</span> Delete or refactor allowed after adversary passes.</li>
+          <li><span class="pill pill-yellow">YELLOW</span> Refactor only, adversary must return <em>accept</em>.</li>
+          <li><span class="pill pill-red">RED</span> All automated changes blocked - manual review required.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/propose.js') }}"></script>
+{% endblock %}

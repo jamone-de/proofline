@@ -20,6 +20,7 @@ import ast
 import json
 import subprocess
 import sys
+import uuid
 from pathlib import Path
 from typing import Any
 
@@ -79,8 +80,17 @@ def _is_symbol_called(module_path: str, symbol: str) -> bool:
     return False
 
 
+def _unique_branch_suffix() -> str:
+    """Return the first 8 hex chars of a random UUID for unique branch names."""
+    return uuid.uuid4().hex[:8]
+
+
 def _git_commit(branch: str, message: str, files: list[Path]) -> bool:
     """Create a git branch, stage *files*, and commit with *message*.
+
+    *branch* must already be unique (include a suffix from
+    :func:`_unique_branch_suffix`) so that re-running propose never collides
+    with an existing branch.
 
     Returns True on success.
     """
@@ -145,7 +155,7 @@ def propose_delete(module_path: str, symbol: str) -> dict[str, Any]:
 
     # Apply the deletion on a git branch
     abs_module = TARGET_ROOT / module_path
-    branch = f"proofline/delete-{symbol}-{abs_module.stem}"
+    branch = f"proofline/delete-{symbol}-{abs_module.stem}-{_unique_branch_suffix()}"
     branch_message = f"proofline: delete {symbol} from {module_path}"
 
     # The adversary already restored the original.  We must re-apply the deletion.
@@ -229,7 +239,7 @@ def propose_refactor(
 
     # Apply on a git branch
     abs_module = TARGET_ROOT / module_path
-    branch = f"proofline/refactor-{symbol}-{abs_module.stem}"
+    branch = f"proofline/refactor-{symbol}-{abs_module.stem}-{_unique_branch_suffix()}"
     branch_message = f"proofline: refactor {symbol} in {module_path}"
 
     original_src = abs_module.read_text(encoding="utf-8")
