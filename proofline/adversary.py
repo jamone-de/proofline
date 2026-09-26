@@ -1,4 +1,4 @@
-"""Adversary – the core verification engine of Proofline.
+"""Adversary - the core verification engine of Proofline.
 
 Runs the target-app pytest suite before and after a proposed change,
 generates extra edge-case calls for changed functions, and returns a
@@ -88,28 +88,30 @@ def _run_pytest(extra_args: list[str] | None = None) -> dict[str, Any]:
 def _load_function(module_path: str, symbol: str) -> Any | None:
     """Dynamically load *symbol* from *module_path* relative to TARGET_ROOT.
 
+    Brightshop's own modules use relative imports (from . import config),
+    so the file cannot be exec'd standalone, it has to be imported by its
+    real dotted name (e.g. brightshop.pricing) so Python sets up the
+    package context. Any cached copy is dropped first so this always runs
+    the current file on disk, not a version from before the change.
+
     Returns the callable, or None if loading fails.
     """
-    abs_path = TARGET_ROOT / module_path.replace(".", "/").rstrip(".py")
-    # Try as a dotted module name first
-    candidates = [
-        TARGET_ROOT / (module_path.replace(".", "/") + ".py"),
-        TARGET_ROOT / module_path,
-    ]
-    for candidate in candidates:
-        if candidate.exists():
-            spec = importlib.util.spec_from_file_location("_proofline_tmp", candidate)
-            if spec and spec.loader:
-                mod = importlib.util.module_from_spec(spec)
-                # Make sure target_app packages resolve
-                if str(TARGET_ROOT) not in sys.path:
-                    sys.path.insert(0, str(TARGET_ROOT))
-                try:
-                    spec.loader.exec_module(mod)  # type: ignore[union-attr]
-                    return getattr(mod, symbol, None)
-                except Exception:
-                    return None
-    return None
+    rel = module_path[:-3] if module_path.endswith(".py") else module_path
+    dotted = rel.replace("\\", "/").replace("/", ".")
+
+    target_str = str(TARGET_ROOT)
+    if target_str not in sys.path:
+        sys.path.insert(0, target_str)
+
+    for name in list(sys.modules):
+        if name == dotted or name.startswith(dotted + "."):
+            del sys.modules[name]
+
+    try:
+        mod = importlib.import_module(dotted)
+        return getattr(mod, symbol, None)
+    except Exception:
+        return None
 
 
 def _generate_edge_cases(fn: Any) -> list[tuple[Any, ...]]:
@@ -327,5 +329,5 @@ def _replace_symbol(src: str, symbol: str, new_code: str) -> str:
                 replacement = textwrap.dedent(new_code).rstrip() + "\n"
                 lines[start:end] = [replacement]
                 return "".join(lines)
-    # Symbol not found – append the new code
+    # Symbol not found - append the new code
     return src + "\n" + new_code

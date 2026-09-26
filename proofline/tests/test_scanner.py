@@ -70,6 +70,9 @@ _COMPLEX_SRC = textwrap.dedent("""
         for j in range(c):
             if j % 2 == 0:
                 pass
+        if a and b: pass
+        if c or d: pass
+        if e and not a: pass
         return a + b + c + d + e
 """)
 

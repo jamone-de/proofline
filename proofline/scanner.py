@@ -4,9 +4,9 @@ Walks ``target_app/**/*.py`` (excluding ``tests/`` and ``_ground_truth/``),
 computes a risk score per module and writes ``proofline/autonomy_map.json``.
 
 Scoring rules (printed explicitly):
-    GREEN  – complexity <= 5 AND coverage >= 80 % AND commit_count >= 2
-    YELLOW – complexity <= 15 AND (coverage >= 40 % OR commit_count >= 1)
-    RED    – anything else (high complexity, no coverage data, or untouched)
+    GREEN  - complexity <= 5 AND coverage >= 80 % AND commit_count >= 2
+    YELLOW - complexity <= 15 AND (coverage >= 40 % OR commit_count >= 1)
+    RED    - anything else (high complexity, no coverage data, or untouched)
 
 MIT License.
 """
@@ -100,9 +100,8 @@ def _git_log(path: Path) -> tuple[int, int]:
     """
     try:
         result = subprocess.run(
-            ["git", "log", "--follow", "--format=%H %ct", "--", str(path)],
+            ["git", "log", "--format=%H %ct", "--", str(path).replace("\\", "/")],
             capture_output=True, text=True, timeout=10,
-            cwd=TARGET_ROOT,
         )
         lines = [ln for ln in result.stdout.strip().splitlines() if ln.strip()]
         if not lines:
@@ -133,8 +132,10 @@ def _coverage_for(module_name: str) -> float | str:
         data = json.loads(cov_path.read_text(encoding="utf-8"))
         files: dict = data.get("files", {})
         for file_key, info in files.items():
-            # Match on the tail of the path (e.g. "brightshop/pricing.py")
-            if Path(file_key).name == module_name or file_key.endswith(module_name):
+            # coverage.json keys use the OS path separator (backslash on
+            # Windows); normalise to forward slashes before comparing.
+            normalised_key = file_key.replace("\\", "/")
+            if normalised_key == module_name or normalised_key.endswith("/" + module_name):
                 summary = info.get("summary", {})
                 pct = summary.get("percent_covered", None)
                 if pct is not None:
@@ -233,7 +234,7 @@ def scan() -> list[dict[str, Any]]:
             "days_since_last_change": days_since,
         }
         records.append(record)
-        print(f"  [{color:6s}] {module_name}  – {reason}")
+        print(f"  [{color:6s}] {module_name}  - {reason}")
 
     MAP_PATH.parent.mkdir(parents=True, exist_ok=True)
     MAP_PATH.write_text(json.dumps(records, indent=2, ensure_ascii=False), encoding="utf-8")
