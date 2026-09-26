@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge, head %}
+{% block title %}{{ customer.name }}{% endblock %}
+{% block content %}
+{% call head("Customer", customer.name, customer.email ~ " · " ~ customer.country ~ ", customer since " ~ (customer.since | datefmt)) %}
+  {{ badge(customer.tier) }} {{ badge(segment) }}
+{% endcall %}
+<section class="grid g-main">
+  <div class="card">
+    <div class="card-head"><h2>Orders</h2><span class="muted small">{{ orders | length }} total</span></div>
+    <div class="card-body flush">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Order</th><th class="hide-sm">Date</th><th>Status</th><th class="num">Total</th></tr></thead>
+          <tbody>
+          {% for o in orders %}
+            <tr class="link" data-href="{{ url_for('order_detail', order_id=o.id) }}">
+              <td><a class="mono" href="{{ url_for('order_detail', order_id=o.id) }}">{{ o.number }}</a></td>
+              <td class="hide-sm muted">{{ o.placed_on | datefmt }}</td>
+              <td>{{ badge(o.status) }}</td>
+              <td class="num">{{ o.totals.gross_cents | money }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="4" class="empty">No orders yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-head"><h2>Profile</h2></div>
+      <div class="card-body">
+        <dl class="dl">
+          <dt>Lifetime</dt><dd>{{ customer.lifetime_cents | money }}</dd>
+          <dt>Points</dt><dd>{{ customer.loyalty_points }}</dd>
+          <dt>Tier review</dt><dd>{{ badge(tier_review) }}{% if tier_review != customer.tier %} <span class="muted small">from {{ customer.tier }}</span>{% endif %}</dd>
+          <dt>Terms</dt><dd>{{ customer.payment_terms }}</dd>
+          <dt>VAT id</dt><dd>{{ customer.vat_id or 'none' }}</dd>
+          <dt>B2B pricing</dt><dd>{{ 'yes' if b2b else 'no' }}</dd>
+          <dt>Credit limit</dt><dd>{{ credit | money if credit else 'none' }}</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Invoices</h2></div>
+      <div class="card-body flush">
+        <ul class="list">
+          {% for inv in invoices %}
+          <li><span class="who"><strong><a href="{{ url_for('invoice_view', number=inv.number) }}">{{ inv.number }}</a></strong><span class="muted small">{{ inv.gross_cents | money }}</span></span>{{ badge(status_of(inv, today)) }}</li>
+          {% else %}
+          <li class="muted">No invoices.</li>
+          {% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
