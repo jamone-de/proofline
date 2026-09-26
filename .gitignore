@@ -217,3 +217,11 @@ __marimo__/
 # Streamlit
 .streamlit/secrets.toml
 HACKATHON_CHECKLIST.md
+
+# Proofline runtime artifacts (generated, not source)
+proofline_audit.jsonl
+proofline/autonomy_map.json
+target_app/coverage.json
+target_app/.coverage
+.venv/
+_tmp_prefixed/
