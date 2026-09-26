@@ -1,0 +1,29 @@
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install -r target_app/requirements.txt
+
+      - name: Run Proofline test suite
+        run: python -m pytest proofline/tests -v
+
+      - name: Run Brightshop (target_app) test suite
+        working-directory: target_app
+        run: python -m pytest -v

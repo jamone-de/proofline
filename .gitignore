@@ -225,3 +225,6 @@ target_app/coverage.json
 target_app/.coverage
 .venv/
 _tmp_prefixed/
+*.mp4
+*.mov
+*.mkv
