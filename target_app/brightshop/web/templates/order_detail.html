@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge, head %}
+{% block title %}{{ order.number }}{% endblock %}
+{% block content %}
+{% call head("Order", order.number, "Placed " ~ (order.placed_on | datefmt) ~ " by " ~ customer.name ~ ", shipped to " ~ order.ship_country ~ ".") %}
+  {{ badge(order.status) }}
+  {% for inv in invoices %}<a class="btn" href="{{ url_for('invoice_view', number=inv.number) }}">{{ icon('print') }}{{ 'Credit note' if inv.kind == 'credit_note' else 'Invoice' }} {{ inv.number }}</a>{% endfor %}
+{% endcall %}
+{% set t = order.totals %}
+<section class="grid g-main">
+  <div class="card">
+    <div class="card-head"><h2>Items</h2><span class="muted small">{{ t.weight_g }} g</span></div>
+    <div class="card-body flush">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Product</th><th class="num">Qty</th><th class="num hide-sm">Unit</th><th class="num hide-sm">Discount</th><th class="num">Net</th></tr></thead>
+          <tbody>
+          {% for l in order.lines %}
+            <tr>
+              <td>{{ l.name }}<span class="sub"><span class="mono">{{ l.sku }}</span> · {{ l.price_kind }}{% for r in l.reasons %} · {{ r }}{% endfor %}</span></td>
+              <td class="num">{{ l.qty }}</td>
+              <td class="num hide-sm">{{ l.unit_cents | money }}</td>
+              <td class="num hide-sm">{% if l.discount_cents %}<span class="neg">-{{ l.discount_cents | money }}</span>{% else %}<span class="faint">none</span>{% endif %}</td>
+              <td class="num">{{ l.net_cents | money }}</td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-head"><h2>Breakdown</h2></div>
+      <div class="card-body">
+        <table class="totals">
+          <tr><td class="muted">Goods</td><td>{{ t.goods_cents | money }}</td></tr>
+          <tr><td class="muted">Discounts</td><td class="{{ 'neg' if t.discount_cents }}">{{ '-' if t.discount_cents }}{{ t.discount_cents | money }}</td></tr>
+          <tr><td class="muted">Shipping ({{ t.shipping.carrier or 'none' }}{% if t.shipping.free %}, free{% endif %})</td><td>{{ t.shipping_cents | money }}</td></tr>
+          {% if t.surcharge_cents %}<tr><td class="muted">Small order surcharge</td><td>{{ t.surcharge_cents | money }}</td></tr>{% endif %}
+          <tr class="sep"><td>Net total</td><td>{{ t.net_cents | money }}</td></tr>
+          {% for g in t.tax_groups %}<tr><td class="muted">VAT {{ g.rate_bp | rate }} on {{ g.net_cents | money }}</td><td>{{ g.tax_cents | money }}</td></tr>{% endfor %}
+          <tr class="grand"><td>Total</td><td>{{ t.gross_cents | money }}</td></tr>
+        </table>
+        {% if t.notes %}<div class="notes mt">{% for n in t.notes %}<span class="tag">{{ n }}</span>{% endfor %}</div>{% endif %}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Customer e-mail</h2><span class="muted small">preview</span></div>
+      <div class="card-body">
+        <div class="small muted">To {{ email.to }}</div>
+        <strong>{{ email.subject }}</strong>
+        <pre class="mail">{{ email.body }}</pre>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>Customer</h2></div>
+      <div class="card-body">
+        <dl class="dl">
+          <dt>Name</dt><dd><a href="{{ url_for('customer_detail', customer_id=customer.id) }}">{{ customer.name }}</a></dd>
+          <dt>Tier</dt><dd>{{ badge(customer.tier) }}</dd>
+          <dt>Terms</dt><dd>{{ customer.payment_terms }}</dd>
+          <dt>VAT id</dt><dd>{{ customer.vat_id or 'none' }}</dd>
+          <dt>Coupon</dt><dd>{{ order.coupon or 'none' }}</dd>
+          <dt>Shipping</dt><dd>{{ order.shipping_method }}</dd>
+        </dl>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

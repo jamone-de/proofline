@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge, head %}
+{% block title %}Price calculator{% endblock %}
+{% block content %}
+{{ head("Pricing", "Price calculator", "Build a cart and see every discount, surcharge, shipping step and VAT group the engine applies.") }}
+<form method="post" class="grid g-12">
+  <div class="card">
+    <div class="card-head"><h2>Cart</h2></div>
+    <div class="card-body">
+      <div id="cart-rows">
+        {% for item in (cart or [{'sku': '', 'qty': 1}]) %}
+        <div class="cart-row">
+          <select name="sku" aria-label="Product">
+            {% for p in products if p.active %}<option value="{{ p.sku }}" {{ 'selected' if p.sku == item.sku }}>{{ p.sku }} · {{ p.name }} · {{ p.price_cents | money }}</option>{% endfor %}
+          </select>
+          <input type="number" name="qty" min="1" max="999" value="{{ item.qty }}" aria-label="Quantity">
+          <button type="button" class="icon-btn" data-remove aria-label="Remove line">{{ icon('x') }}</button>
+        </div>
+        {% endfor %}
+      </div>
+      <button type="button" class="btn small" id="add-row">{{ icon('plus') }}Add line</button>
+
+      <div class="form-grid mt">
+        <label class="field full">Customer
+          <select name="customer_id">
+            <option value="">Guest (no account)</option>
+            {% for c in customers %}<option value="{{ c.id }}" {{ 'selected' if form.get('customer_id') == c.id | string }}>{{ c.name }} · {{ c.tier }} · {{ c.country }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="field">Ship to
+          <select name="country">{% for c in countries %}<option {{ 'selected' if form.get('country') == c }}>{{ c }}</option>{% endfor %}</select>
+        </label>
+        <label class="field">Shipping
+          <select name="method">{% for m in methods %}<option {{ 'selected' if form.get('method') == m }}>{{ m }}</option>{% endfor %}</select>
+        </label>
+        <label class="field">Coupon
+          <input name="coupon" value="{{ form.get('coupon') or '' }}" placeholder="e.g. AUTUMN15" autocomplete="off">
+        </label>
+        <label class="field">Redeem points
+          <input type="number" name="points" min="0" step="100" value="{{ form.get('points') or 0 }}">
+        </label>
+        <label class="field">Order date
+          <input type="date" name="date" value="{{ form.get('date') }}">
+        </label>
+        <label class="field">Mode
+          <select name="mode"><option value="sale" {{ 'selected' if form.get('mode') != 'return' }}>sale</option><option value="return" {{ 'selected' if form.get('mode') == 'return' }}>return (credit)</option></select>
+        </label>
+      </div>
+      <div class="mt"><button class="btn primary" type="submit">Calculate</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h2>Breakdown</h2>{% if result and result.b2b %}{{ badge('B2B pricing', 'info') }}{% endif %}</div>
+    <div class="card-body">
+      {% if error %}
+        <div class="alert">{{ error }}</div>
+      {% elif result %}
+        <div class="table-wrap">
+          <table>
+            <tbody>
+            {% for l in result.lines %}
+              <tr>
+                <td style="padding-left:0">{{ l.name }}<span class="sub">{{ l.qty }} × {{ l.unit_cents | money }} · {{ l.price_kind }}{% for r in l.reasons %} · {{ r }}{% endfor %}</span></td>
+                <td class="num" style="padding-right:0">{{ l.net_cents | money }}{% if l.discount_cents %}<span class="sub neg">-{{ l.discount_cents | money }}</span>{% endif %}</td>
+              </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <table class="totals mt">
+          <tr><td class="muted">Goods</td><td>{{ result.goods_cents | money }}</td></tr>
+          <tr><td class="muted">Discounts{% if result.discounts.bundle %} (bundle: {{ result.discounts.bundle }}){% endif %}</td><td class="{{ 'neg' if result.discount_cents }}">{{ '-' if result.discount_cents }}{{ result.discount_cents | money }}</td></tr>
+          {% if result.surcharge_cents %}<tr><td class="muted">Small order surcharge</td><td>{{ result.surcharge_cents | money }}</td></tr>{% endif %}
+          <tr><td class="muted">Shipping ({{ result.shipping.carrier or 'none' }}, {{ result.shipping.zone }}{% if result.shipping.free %}, free{% endif %})</td><td>{{ result.shipping_cents | money }}</td></tr>
+          <tr class="sep"><td>Net total</td><td>{{ result.net_cents | money }}</td></tr>
+          {% for g in result.tax_groups %}<tr><td class="muted">VAT {{ g.rate_bp | rate }}</td><td>{{ g.tax_cents | money }}</td></tr>{% endfor %}
+          <tr class="grand"><td>{{ 'Credit' if result.mode == 'return' else 'Total' }}</td><td>{{ result.gross_cents | money }}</td></tr>
+        </table>
+        {% if result.notes %}<div class="notes mt">{% for n in result.notes %}<span class="tag">{{ n }}</span>{% endfor %}</div>{% endif %}
+      {% endif %}
+    </div>
+  </div>
+</form>
+{% endblock %}
