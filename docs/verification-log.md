@@ -49,6 +49,35 @@ print output rendered as `?` (replaced with plain hyphens throughout).
 
 None of this touched `target_app/_ground_truth/`, which was not read.
 
+## 2026-09-26/27: web dashboard and later sessions, reviewed the same way
+
+Every later Bob session (the web dashboard, the "load current source" button,
+the plain-language explanations, the repo polish) went through the same
+process: read the diff first, run the real test suite, then actually click
+through the running app or hit it with real requests before trusting the
+session summary. Two more real issues turned up this way:
+
+4. **Sort arrow rendered as literal text.** The autonomy map's sort-header
+   macro emitted the string `'&#9650;'`/`'&#9660;'`, which Jinja2 autoescapes,
+   so the page showed the literal text `&#9650;` instead of an arrow. Fixed
+   by using the actual unicode character instead of an HTML entity, which
+   sidesteps the escaping entirely.
+
+5. **A leftover `&mdash;` HTML entity** in `audit.html`'s chain badge, which
+   the project's own house style (no em dashes) doesn't allow and which an
+   earlier cleanup pass, that only searched for the literal dash character,
+   did not catch. A repo-wide search for `&mdash;`/`&ndash;`/numeric dash
+   entities found this one occurrence and confirmed no others.
+
+One thing that looked like a bug but was not: during the "load current
+source" review, the button appeared to return a 404 in the browser. That
+turned out to be several of the reviewer's own leftover local test servers
+still running on Windows from earlier sessions (Windows would not let this
+review process kill them), so the browser tab was talking to stale code, not
+the new route. A completely fresh server on a new port proved the actual
+route, including its path-traversal and `_ground_truth/` rejections, worked
+correctly the whole time.
+
 ## Separately: the demo repository's own git history had to be repaired
 
 `target_app/`'s 75-commit synthetic history was originally brought in with
