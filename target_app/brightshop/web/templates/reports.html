@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, badge, head %}
+{% block title %}Reports{% endblock %}
+{% block content %}
+{% call head("Finance", "Reports", "Net sales grouped any way you like, plus VAT still to be invoiced and the receivables ageing.") %}
+  <a class="btn" href="{{ url_for('report_export', fmt='csv', group_by=group_by, start=start, end=end) }}">CSV</a>
+  <a class="btn" href="{{ url_for('report_export', fmt='json', group_by=group_by, start=start, end=end) }}">JSON</a>
+{% endcall %}
+<div class="filters">
+  <div class="seg">
+    {% for g in groups %}<a href="{{ url_for('reports', group_by=g, start=start, end=end) }}" class="{{ 'on' if g == group_by }}">{{ g | capitalize }}</a>{% endfor %}
+  </div>
+  <span class="grow"></span>
+  <span class="muted small">{{ start | datefmt }} to {{ end | datefmt }}</span>
+</div>
+<section class="grid g-21">
+  <div class="card">
+    <div class="card-head"><h2>Net sales by {{ group_by }}</h2>
+      {% if report.growth_pct is not none %}<span class="chip {{ 'up' if report.growth_pct >= 0 else 'down' }}">{{ report.growth_pct }} % vs. previous period</span>{% endif %}</div>
+    <div class="card-body flush">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>{{ group_by | capitalize }}</th><th class="num">Orders</th><th class="num hide-sm">Units</th><th class="num hide-sm">Average</th><th class="num">Net</th></tr></thead>
+          <tbody>
+          {% for r in report.rows %}
+            <tr><td>{{ r.key }}</td><td class="num">{{ r.orders }}</td><td class="num hide-sm">{{ r.units }}</td><td class="num hide-sm">{{ r.avg_cents | money }}</td><td class="num">{{ r.net_cents | money }}</td></tr>
+          {% else %}
+            <tr><td colspan="5" class="empty">Nothing sold in this period.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <div class="grid">
+    <div class="card">
+      <div class="card-head"><h2>Receivables ageing</h2></div>
+      <div class="card-body">
+        <table class="totals">
+          <tr><td class="muted">Not yet due</td><td>{{ receivables.buckets.current | money }}</td></tr>
+          <tr><td class="muted">1 to 30 days</td><td>{{ receivables.buckets['1_30'] | money }}</td></tr>
+          <tr><td class="muted">31 to 60 days</td><td>{{ receivables.buckets['31_60'] | money }}</td></tr>
+          <tr><td class="muted">Over 60 days</td><td>{{ receivables.buckets['60_plus'] | money }}</td></tr>
+          <tr class="grand"><td>Open</td><td>{{ receivables.total_cents | money }}</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h2>VAT on uninvoiced orders</h2></div>
+      <div class="card-body">
+        <table class="totals">
+          {% for rate, cents in forecast.items() %}<tr><td class="muted">{{ rate | rate }}</td><td>{{ cents | money }}</td></tr>{% else %}<tr><td class="muted">Everything is invoiced.</td><td></td></tr>{% endfor %}
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="card mt">
+  <div class="card-head"><h2>Revenue by category</h2></div>
+  <div class="card-body flush">
+    <ul class="list">
+      {% for name, cents in categories %}<li><span>{{ name | replace('_', ' ') | capitalize }}</span><span>{{ cents | money }}</span></li>{% endfor %}
+    </ul>
+  </div>
+</section>
+{% endblock %}
