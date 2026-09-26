@@ -135,6 +135,14 @@ def create_app() -> Flask:
             key_fn = lambda m: m.get("module", "")
 
         modules = sorted(modules, key=key_fn, reverse=reverse)
+
+        # Pass the real threshold constants so the template never needs to
+        # hardcode numbers that live in scanner.py.
+        from proofline.scanner import (
+            GREEN_MAX_COMPLEXITY, GREEN_MIN_COVERAGE, GREEN_MIN_COMMITS,
+            YELLOW_MAX_COMPLEXITY, YELLOW_MIN_COVERAGE,
+        )
+
         return render_template(
             "autonomy.html",
             modules=modules,
@@ -142,6 +150,11 @@ def create_app() -> Flask:
             sort_by=sort_by,
             sort_dir=sort_dir,
             active="autonomy",
+            GREEN_MAX_COMPLEXITY=GREEN_MAX_COMPLEXITY,
+            GREEN_MIN_COVERAGE=GREEN_MIN_COVERAGE,
+            GREEN_MIN_COMMITS=GREEN_MIN_COMMITS,
+            YELLOW_MAX_COMPLEXITY=YELLOW_MAX_COMPLEXITY,
+            YELLOW_MIN_COVERAGE=YELLOW_MIN_COVERAGE,
         )
 
     @app.route("/audit")

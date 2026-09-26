@@ -116,6 +116,10 @@
         body: JSON.stringify(payload),
       });
       const data = await resp.json();
+      // Attach the form's module/symbol to the response so buildExplanation
+      // can use them – the server doesn't echo them back.
+      data._form_module = payload.module || "";
+      data._form_symbol = payload.symbol || "";
       renderVerdict(data);
     } catch (err) {
       renderError(String(err));
@@ -140,10 +144,49 @@
       .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   }
 
+  /**
+   * Build a single plain-English sentence explaining the verdict.
+   * Always derived from the real response fields – never a canned string.
+   */
+  function buildExplanation(data) {
+    const mod    = esc(data._form_module || data.module_path || data.module || "this module");
+    const color  = esc(data.color || "");
+    const v      = data.verdict || {};
+    const branch = esc(data.branch || "");
+    const reason = esc(data.reason || "");
+
+    if (data.status === "blocked") {
+      // Pull the complexity number from the reason field if scanner put it there.
+      const complexityMatch = reason.match(/complexity=?(\d+)/i);
+      const detail = complexityMatch
+        ? ` (complexity ${complexityMatch[1]})`
+        : "";
+      const modLabel = mod !== "this module" ? `${mod} ` : "";
+      return `Blocked: ${modLabel}is ${color}${detail}, so Proofline will not touch it automatically.`;
+    }
+
+    if (data.status === "applied") {
+      const tests    = v.tests_after  != null ? v.tests_after  : "?";
+      const edges    = v.new_edge_cases_run != null ? v.new_edge_cases_run : "?";
+      const branchPart = branch ? `, so the change was committed on branch <code class="mono">${branch}</code>` : "";
+      return `Applied: the adversary ran ${tests} test${tests !== 1 ? "s" : ""} and ${edges} edge case${edges !== 1 ? "s" : ""} before and after the change, all matched${branchPart}.`;
+    }
+
+    if (data.status === "needs_review" || data.status === "rejected") {
+      const why = reason || (v.verdict ? `the adversary returned "${esc(v.verdict)}"` : "verification did not pass");
+      return `Not applied: ${why}.`;
+    }
+
+    // Fallback for unexpected statuses (e.g. "error")
+    return reason ? `Error: ${reason}.` : `Unexpected status: ${esc(data.status || "unknown")}.`;
+  }
+
   function renderVerdict(data) {
     const [label, color] = statusLabel[data.status] || ["Unknown", "#64748b"];
     let html = `<div class="verdict-block">`;
     html += `<div class="verdict-status" style="color:${color}">${label}</div>`;
+    // Plain-language explanation derived from the real response
+    html += `<p class="verdict-explain">${buildExplanation(data)}</p>`;
     if (data.reason) {
       html += `<div class="verdict-row"><span class="verdict-key">Reason</span><span>${esc(data.reason)}</span></div>`;
     }

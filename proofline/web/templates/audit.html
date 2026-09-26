@@ -9,6 +9,10 @@
   {% else %}
     <span class="chain-badge chain-broken">&#10007; Chain broken at index {{ broken_idx }}</span>
   {% endif %}
+  <p class="chain-explain">
+    Every event is linked to the one before it by a cryptographic hash.
+    If anything were edited after the fact, this chain would break instead of silently staying green.
+  </p>
 </div>
 
 {% if records %}

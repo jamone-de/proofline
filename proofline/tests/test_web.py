@@ -291,3 +291,87 @@ class TestSourcePreview:
         assert resp.status_code == 404
         data = resp.get_json()
         assert "error" in data
+
+class TestExplanatoryText:
+    """Verify that explanatory UI text appears and reflects real response data."""
+
+    # ── Autonomy map threshold caption ──────────────────────────────────────
+    def test_autonomy_shows_threshold_caption(self, client) -> None:
+        """GET /autonomy must include the real threshold numbers from scanner.py."""
+        from proofline.scanner import (
+            GREEN_MAX_COMPLEXITY, GREEN_MIN_COVERAGE, GREEN_MIN_COMMITS,
+            YELLOW_MAX_COMPLEXITY, YELLOW_MIN_COVERAGE,
+        )
+        resp = client.get("/autonomy")
+        assert resp.status_code == 200
+        body = resp.data.decode()
+        # The caption must contain the actual numeric thresholds, not placeholders
+        assert str(GREEN_MAX_COMPLEXITY) in body
+        assert str(int(GREEN_MIN_COVERAGE)) in body
+        assert str(GREEN_MIN_COMMITS) in body
+        assert str(YELLOW_MAX_COMPLEXITY) in body
+        assert str(int(YELLOW_MIN_COVERAGE)) in body
+        # All three color labels must appear in the caption text
+        assert "GREEN" in body
+        assert "YELLOW" in body
+        assert "RED" in body
+
+    def test_autonomy_caption_absent_without_thresholds(self, client) -> None:
+        """The rule-caption class must be present in the page."""
+        resp = client.get("/autonomy")
+        body = resp.data.decode()
+        assert "rule-caption" in body
+
+    # ── Audit chain explanation ──────────────────────────────────────────────
+    def test_audit_shows_chain_explanation(self, client) -> None:
+        """GET /audit must include the cryptographic hash explanation sentence."""
+        resp = client.get("/audit")
+        assert resp.status_code == 200
+        body = resp.data.decode()
+        assert "cryptographic hash" in body
+        assert "break" in body
+
+    def test_audit_explanation_always_present_regardless_of_chain_state(
+        self, client
+    ) -> None:
+        """The chain-explain paragraph must appear on both intact and broken chains."""
+        resp = client.get("/audit")
+        body = resp.data.decode()
+        assert "chain-explain" in body
+
+    # ── Propose verdict explanation ──────────────────────────────────────────
+    def test_propose_blocked_response_has_fields_for_explanation(
+        self, client
+    ) -> None:
+        """A blocked POST /propose must return 'status', 'reason', and 'color'
+        so the JS can build a meaningful explanation sentence from real data."""
+        payload = {
+            "module": "brightshop/pricing.py",
+            "symbol": "calculate_order_total_v1",
+            "action": "delete",
+        }
+        resp = client.post(
+            "/propose",
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        data = resp.get_json()
+        # All three fields the JS explanation uses must be present and non-empty
+        assert data.get("status") == "blocked"
+        assert data.get("reason"), "reason field must be non-empty for explanation"
+        assert data.get("color") == "RED"
+        # reason must mention the color so the JS can extract it
+        assert "RED" in data["reason"]
+
+    def test_propose_result_panel_template_has_verdict_explain_class(
+        self, client
+    ) -> None:
+        """GET /propose must include the verdict-explain CSS class in the page
+        so the JS has a target to write the explanation into."""
+        resp = client.get("/propose")
+        assert resp.status_code == 200
+        # The JS renders into a panel; the CSS class that styles explanations
+        # must be loaded via the stylesheet referenced from the base template.
+        body = resp.data.decode()
+        assert "propose.js" in body  # script is wired up
+

@@ -15,6 +15,11 @@
     <a href="{{ url_for('autonomy', color='RED', sort=sort_by, dir=sort_dir) }}"
        class="filter-pill pill-red {% if color_filter == 'RED' %}active{% endif %}">RED</a>
   </div>
+  <span class="rule-caption">
+    <span class="pill pill-green">GREEN</span> complexity&nbsp;&le;&nbsp;{{ GREEN_MAX_COMPLEXITY }}, coverage&nbsp;&ge;&nbsp;{{ GREEN_MIN_COVERAGE|int }}%, commits&nbsp;&ge;&nbsp;{{ GREEN_MIN_COMMITS }}&ensp;&middot;&ensp;
+    <span class="pill pill-yellow">YELLOW</span> complexity&nbsp;&le;&nbsp;{{ YELLOW_MAX_COMPLEXITY }}, coverage&nbsp;&ge;&nbsp;{{ YELLOW_MIN_COVERAGE|int }}% or &ge;&nbsp;1&nbsp;commit&ensp;&middot;&ensp;
+    <span class="pill pill-red">RED</span> anything else
+  </span>
 </div>
 {% endblock %}
 
