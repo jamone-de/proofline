@@ -25,7 +25,7 @@
      class="sort-header {% if sort_by == col %}sort-active{% endif %}">
     {{ label }}
     {% if sort_by == col %}
-      {{ '&#9650;' if sort_dir == 'asc' else '&#9660;' }}
+      {{ '▲' if sort_dir == 'asc' else '▼' }}
     {% endif %}
   </a>
 {% endmacro %}
