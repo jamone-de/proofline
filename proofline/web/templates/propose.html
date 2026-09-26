@@ -44,7 +44,14 @@
           </div>
 
           <div class="form-field" id="new-code-field" style="display:none;">
-            <label for="new-code-input">Replacement code</label>
+            <div class="textarea-label-row">
+              <label for="new-code-input">Replacement code</label>
+              <button type="button" id="load-source-btn" class="btn-load-source"
+                      style="display:none;" title="Fill textarea with the current implementation">
+                Load current source
+              </button>
+            </div>
+            <div id="load-source-error" class="load-source-error" style="display:none;"></div>
             <textarea id="new-code-input" name="new_code" class="form-textarea mono"
                       rows="10" placeholder="def my_function(...):\n    ..."></textarea>
           </div>

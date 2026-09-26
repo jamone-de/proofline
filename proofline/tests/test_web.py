@@ -15,7 +15,6 @@ MIT License.
 from __future__ import annotations
 
 import json
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -217,3 +216,78 @@ class TestScan:
 
         resp = client.post("/scan")
         assert resp.status_code in (302, 200)
+
+
+class TestSourcePreview:
+    """Tests for GET /source – read-only AST function extraction."""
+
+    def test_known_symbol_returns_200_and_source(self, client) -> None:
+        """Loading a real known function returns 200 and its source text."""
+        resp = client.get("/source?module=brightshop/money.py&symbol=clamp")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data is not None
+        assert "source" in data
+        # The actual implementation: def clamp(value, low, high): ...
+        assert "def clamp" in data["source"]
+        assert "max" in data["source"] or "min" in data["source"]
+
+    def test_known_symbol_source_matches_file(self, client) -> None:
+        """The returned source must be an exact substring of the real file."""
+        from pathlib import Path
+        real_src = (
+            Path(__file__).parent.parent.parent / "target_app" / "brightshop" / "money.py"
+        ).read_text(encoding="utf-8")
+
+        resp = client.get("/source?module=brightshop/money.py&symbol=round_div")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert data["source"] in real_src, "Returned source is not a substring of the file"
+        assert "def round_div" in data["source"]
+
+    def test_unknown_symbol_returns_404(self, client) -> None:
+        """A symbol that does not exist in the file must return 404."""
+        resp = client.get("/source?module=brightshop/money.py&symbol=nonexistent_func_xyz")
+        assert resp.status_code == 404
+        data = resp.get_json()
+        assert "error" in data
+        assert "nonexistent_func_xyz" in data["error"]
+
+    def test_missing_params_returns_404(self, client) -> None:
+        """Missing module or symbol parameters must return 404."""
+        resp = client.get("/source?module=brightshop/money.py")
+        assert resp.status_code == 404
+
+        resp2 = client.get("/source?symbol=clamp")
+        assert resp2.status_code == 404
+
+    def test_path_traversal_dotdot_is_rejected(self, client) -> None:
+        """A module path with ../ must be rejected before any file is read."""
+        resp = client.get("/source?module=../proofline/ledger.py&symbol=append")
+        assert resp.status_code == 404
+        data = resp.get_json()
+        assert "error" in data
+        # Must say something about escaping or invalid path, not a traceback
+        assert "escapes" in data["error"] or "invalid" in data["error"].lower()
+
+    def test_absolute_path_traversal_is_rejected(self, client) -> None:
+        """An absolute path outside target_app/ must be rejected."""
+        resp = client.get("/source?module=/etc/passwd&symbol=root")
+        assert resp.status_code == 404
+        data = resp.get_json()
+        assert "error" in data
+
+    def test_ground_truth_path_is_rejected(self, client) -> None:
+        """Any path containing _ground_truth/ must be rejected."""
+        resp = client.get("/source?module=_ground_truth/some_module.py&symbol=fn")
+        assert resp.status_code == 404
+        data = resp.get_json()
+        assert "error" in data
+        assert "_ground_truth" in data["error"] or "not allowed" in data["error"]
+
+    def test_nonexistent_module_returns_404(self, client) -> None:
+        """A module path that is inside target_app/ but does not exist returns 404."""
+        resp = client.get("/source?module=brightshop/does_not_exist_xyz.py&symbol=fn")
+        assert resp.status_code == 404
+        data = resp.get_json()
+        assert "error" in data

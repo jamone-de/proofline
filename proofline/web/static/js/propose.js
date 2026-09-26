@@ -8,15 +8,19 @@
 (function () {
   "use strict";
 
-  const form        = document.getElementById("propose-form");
-  const moduleInput = document.getElementById("module-input");
-  const colorHint   = document.getElementById("color-hint");
-  const colorInd    = document.getElementById("color-indicator");
-  const actionRadios= document.querySelectorAll('input[name="action"]');
-  const newCodeField= document.getElementById("new-code-field");
-  const submitBtn   = document.getElementById("submit-btn");
-  const resultPanel = document.getElementById("result-panel");
-  const resultBody  = document.getElementById("result-body");
+  const form          = document.getElementById("propose-form");
+  const moduleInput   = document.getElementById("module-input");
+  const colorHint     = document.getElementById("color-hint");
+  const colorInd      = document.getElementById("color-indicator");
+  const actionRadios  = document.querySelectorAll('input[name="action"]');
+  const newCodeField  = document.getElementById("new-code-field");
+  const submitBtn     = document.getElementById("submit-btn");
+  const resultPanel   = document.getElementById("result-panel");
+  const resultBody    = document.getElementById("result-body");
+  const loadSourceBtn = document.getElementById("load-source-btn");
+  const loadSourceErr = document.getElementById("load-source-error");
+  const newCodeInput  = document.getElementById("new-code-input");
+  const symbolInput   = document.getElementById("symbol-input");
 
   /* ── Color hint when a module is selected ───────────────────────────── */
   const pillClass = { GREEN: "pill-green", YELLOW: "pill-yellow", RED: "pill-red" };
@@ -33,16 +37,62 @@
     }
   });
 
-  /* ── Show / hide new-code textarea based on action radio ───────────── */
+  /* ── Show / hide new-code textarea and load-source button ──────────── */
   function updateNewCodeVisibility() {
     const action = document.querySelector('input[name="action"]:checked').value;
-    newCodeField.style.display = action === "refactor" ? "block" : "none";
+    const isRefactor = action === "refactor";
+    newCodeField.style.display = isRefactor ? "block" : "none";
+    updateLoadSourceButton();
+  }
+
+  function updateLoadSourceButton() {
+    if (!loadSourceBtn) return;
+    const action = document.querySelector('input[name="action"]:checked').value;
+    const hasModule = moduleInput.value.trim() !== "";
+    const hasSymbol = symbolInput.value.trim() !== "";
+    const show = action === "refactor" && hasModule && hasSymbol;
+    loadSourceBtn.style.display = show ? "inline-block" : "none";
   }
 
   actionRadios.forEach(function (r) {
     r.addEventListener("change", updateNewCodeVisibility);
   });
+  moduleInput.addEventListener("change", updateLoadSourceButton);
+  symbolInput.addEventListener("input", updateLoadSourceButton);
   updateNewCodeVisibility();
+
+  /* ── Load current source ─────────────────────────────────────────── */
+  if (loadSourceBtn) {
+    loadSourceBtn.addEventListener("click", async function () {
+      const mod = moduleInput.value.trim();
+      const sym = symbolInput.value.trim();
+      if (!mod || !sym) return;
+
+      loadSourceBtn.disabled = true;
+      loadSourceBtn.textContent = "Loading…";
+      loadSourceErr.style.display = "none";
+      loadSourceErr.textContent = "";
+
+      try {
+        const url = "/source?" + new URLSearchParams({ module: mod, symbol: sym });
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (resp.ok && data.source !== undefined) {
+          newCodeInput.value = data.source;
+          newCodeInput.focus();
+        } else {
+          loadSourceErr.textContent = data.error || "Could not load source.";
+          loadSourceErr.style.display = "block";
+        }
+      } catch (err) {
+        loadSourceErr.textContent = "Request failed: " + String(err);
+        loadSourceErr.style.display = "block";
+      } finally {
+        loadSourceBtn.disabled = false;
+        loadSourceBtn.textContent = "Load current source";
+      }
+    });
+  }
 
   /* ── Fetch submission ───────────────────────────────────────────────── */
   form.addEventListener("submit", async function (e) {

@@ -8,6 +8,7 @@ MIT License.
 """
 from __future__ import annotations
 
+import ast
 import json
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ from proofline import actions, ledger, scanner
 _HERE = Path(__file__).parent
 _ROOT = _HERE.parent.parent
 MAP_PATH = _ROOT / "proofline" / "autonomy_map.json"
+TARGET_ROOT = _ROOT / "target_app"
 
 
 def create_app() -> Flask:
@@ -192,6 +194,68 @@ def create_app() -> Flask:
             result = actions.propose_refactor(module_path, symbol, new_code)
 
         return jsonify(result)
+
+    @app.route("/source")
+    def source_preview():
+        """Return the source text of a single function as JSON.
+
+        Query parameters:
+            module  – path relative to target_app/ (e.g. ``brightshop/money.py``)
+            symbol  – top-level function name to extract
+
+        Returns ``{"source": "..."}`` on success, or
+        ``{"error": "..."}`` with HTTP 404 on any failure.
+
+        The file is only *read*, never imported or executed.
+        """
+        module_param = (request.args.get("module") or "").strip()
+        symbol_param = (request.args.get("symbol") or "").strip()
+
+        # --- Input validation ------------------------------------------------
+        if not module_param or not symbol_param:
+            return jsonify({"error": "module and symbol parameters are required"}), 404
+
+        # Normalise to a Path and reject anything that escapes target_app/
+        try:
+            candidate = (TARGET_ROOT / module_param).resolve()
+        except Exception:
+            return jsonify({"error": "invalid module path"}), 404
+
+        try:
+            candidate.relative_to(TARGET_ROOT.resolve())
+        except ValueError:
+            return jsonify({"error": "path escapes target_app/"}), 404
+
+        # Reject _ground_truth/ regardless of resolution
+        if "_ground_truth" in candidate.parts:
+            return jsonify({"error": "access to _ground_truth/ is not allowed"}), 404
+
+        if not candidate.exists() or not candidate.is_file():
+            return jsonify({"error": f"module not found: {module_param}"}), 404
+
+        if candidate.suffix != ".py":
+            return jsonify({"error": "only .py files are supported"}), 404
+
+        # --- AST extraction (no import, no exec) -----------------------------
+        try:
+            source = candidate.read_text(encoding="utf-8")
+            tree = ast.parse(source, filename=str(candidate))
+        except (OSError, SyntaxError) as exc:
+            return jsonify({"error": f"could not parse file: {exc}"}), 404
+
+        for node in ast.walk(tree):
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if node.name == symbol_param:
+                    segment = ast.get_source_segment(source, node)
+                    if segment is None:
+                        # Fallback: slice by line numbers (Python < 3.8 compat)
+                        lines = source.splitlines(keepends=True)
+                        start = node.lineno - 1
+                        end = node.end_lineno  # type: ignore[attr-defined]
+                        segment = "".join(lines[start:end])
+                    return jsonify({"source": segment})
+
+        return jsonify({"error": f"symbol '{symbol_param}' not found in {module_param}"}), 404
 
     @app.route("/scan", methods=["POST"])
     def scan_trigger():
