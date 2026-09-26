@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Proofline - Verification Certificate</title>
+<style>
+  body {font-family:-apple-system,"Segoe UI",system-ui,sans-serif;
+         max-width:960px;margin:2em auto;padding:0 1em;
+         color:#1f2328;background:#fff;line-height:1.6;}
+  h1 {color:#1f2328;border-bottom:2px solid #3b82d4;padding-bottom:0.3em;}
+  h2 {color:#1f2328;margin-top:2em;}
+  table {border-collapse:collapse;width:100%;font-size:0.9em;}
+  th,td {border:1px solid #e5e7eb;padding:0.4em 0.7em;text-align:left;}
+  th {background:#f7f8fa;font-weight:600;}
+  tr:hover {background:#f7f8fa;}
+  section {margin-bottom:2.5em;}
+  .card {border:1px solid #e5e7eb;border-radius:6px;padding:0.8em 1.2em;
+          min-width:110px;text-align:center;background:#f7f8fa;}
+  .big {font-size:2em;font-weight:700;}
+  code {background:#f1f5f9;padding:1px 4px;border-radius:3px;font-size:0.9em;}
+  footer {border-top:1px solid #e5e7eb;margin-top:3em;padding-top:0.8em;
+           text-align:center;font-size:0.75em;color:#57606a;}
+</style>
+</head>
+<body>
+<h1>Proofline - Verification Certificate</h1>
+
+<div style="display:flex;gap:2em;margin-bottom:1.5em;flex-wrap:wrap;">
+  <div class="card"><div class="big">24</div><div>Modules scanned</div></div>
+  <div class="card" style="border-color:#22c55e;"><div class="big" style="color:#22c55e;">3</div><div>GREEN</div></div>
+  <div class="card" style="border-color:#eab308;"><div class="big" style="color:#eab308;">13</div><div>YELLOW</div></div>
+  <div class="card" style="border-color:#ef4444;"><div class="big" style="color:#ef4444;">8</div><div>RED</div></div>
+  <div class="card"><div class="big">1</div><div>Changes applied</div></div>
+  <div class="card"><div class="big">12</div><div>Ledger events</div></div>
+</div>
+
+<section>
+  <h2>Autonomy Map</h2>
+  <table>
+    <thead><tr>
+      <th>Risk</th><th>Module</th><th>Complexity</th>
+      <th>Coverage</th><th>Commits</th><th>Reason</th>
+    </tr></thead>
+    <tbody><tr><td><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">GREEN</span></td><td style='font-family:monospace;'>brightshop/__init__.py</td><td>0</td><td>100.0%</td><td>2</td><td style='font-size:0.85em;color:#555;'>complexity=0&lt;=5, coverage=100.0%&gt;=80.0%, commits=2&gt;=2</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/__main__.py</td><td>0</td><td>0.0%</td><td>1</td><td style='font-size:0.85em;color:#555;'>complexity=0&lt;=15, commits=1&gt;=1</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/clock.py</td><td>2</td><td>0.0%</td><td>1</td><td style='font-size:0.85em;color:#555;'>complexity=2&lt;=15, commits=1&gt;=1</td></tr>
+<tr><td><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">GREEN</span></td><td style='font-family:monospace;'>brightshop/config.py</td><td>0</td><td>100.0%</td><td>3</td><td style='font-size:0.85em;color:#555;'>complexity=0&lt;=5, coverage=100.0%&gt;=80.0%, commits=3&gt;=2</td></tr>
+<tr><td><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">RED</span></td><td style='font-family:monospace;'>brightshop/customers.py</td><td>16</td><td>33.3%</td><td>4</td><td style='font-size:0.85em;color:#555;'>complexity=16&gt;15; coverage=33.3%&lt;40.0%</td></tr>
+<tr><td><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">RED</span></td><td style='font-family:monospace;'>brightshop/discounts.py</td><td>42</td><td>16.9%</td><td>9</td><td style='font-size:0.85em;color:#555;'>complexity=42&gt;15; coverage=16.9%&lt;40.0%</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/experiments.py</td><td>3</td><td>0.0%</td><td>1</td><td style='font-size:0.85em;color:#555;'>complexity=3&lt;=15, commits=1&gt;=1</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/fax_gateway.py</td><td>2</td><td>0.0%</td><td>1</td><td style='font-size:0.85em;color:#555;'>complexity=2&lt;=15, commits=1&gt;=1</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/inventory.py</td><td>14</td><td>35.5%</td><td>3</td><td style='font-size:0.85em;color:#555;'>complexity=14&lt;=15, commits=3&gt;=1</td></tr>
+<tr><td><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">RED</span></td><td style='font-family:monospace;'>brightshop/invoicing.py</td><td>36</td><td>20.8%</td><td>7</td><td style='font-size:0.85em;color:#555;'>complexity=36&gt;15; coverage=20.8%&lt;40.0%</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/legacy_utils.py</td><td>9</td><td>27.4%</td><td>1</td><td style='font-size:0.85em;color:#555;'>complexity=9&lt;=15, commits=1&gt;=1</td></tr>
+<tr><td><span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">GREEN</span></td><td style='font-family:monospace;'>brightshop/models.py</td><td>0</td><td>98.7%</td><td>3</td><td style='font-size:0.85em;color:#555;'>complexity=0&lt;=5, coverage=98.7%&gt;=80.0%, commits=3&gt;=2</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/money.py</td><td>6</td><td>100.0%</td><td>2</td><td style='font-size:0.85em;color:#555;'>complexity=6&lt;=15, coverage=100.0%&gt;=40.0%</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/notifications.py</td><td>10</td><td>0.0%</td><td>2</td><td style='font-size:0.85em;color:#555;'>complexity=10&lt;=15, commits=2&gt;=1</td></tr>
+<tr><td><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">RED</span></td><td style='font-family:monospace;'>brightshop/pricing.py</td><td>43</td><td>10.9%</td><td>8</td><td style='font-size:0.85em;color:#555;'>complexity=43&gt;15; coverage=10.9%&lt;40.0%</td></tr>
+<tr><td><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">RED</span></td><td style='font-family:monospace;'>brightshop/reporting.py</td><td>40</td><td>0.0%</td><td>5</td><td style='font-size:0.85em;color:#555;'>complexity=40&gt;15; coverage=0.0%&lt;40.0%</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/returns.py</td><td>9</td><td>0.0%</td><td>1</td><td style='font-size:0.85em;color:#555;'>complexity=9&lt;=15, commits=1&gt;=1</td></tr>
+<tr><td><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">RED</span></td><td style='font-family:monospace;'>brightshop/seed.py</td><td>23</td><td>0.0%</td><td>3</td><td style='font-size:0.85em;color:#555;'>complexity=23&gt;15; coverage=0.0%&lt;40.0%</td></tr>
+<tr><td><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">RED</span></td><td style='font-family:monospace;'>brightshop/shipping.py</td><td>18</td><td>39.0%</td><td>6</td><td style='font-size:0.85em;color:#555;'>complexity=18&gt;15; coverage=39.0%&lt;40.0%</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/store.py</td><td>0</td><td>70.8%</td><td>1</td><td style='font-size:0.85em;color:#555;'>complexity=0&lt;=15, coverage=70.8%&gt;=40.0%</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/tax.py</td><td>15</td><td>63.2%</td><td>4</td><td style='font-size:0.85em;color:#555;'>complexity=15&lt;=15, coverage=63.2%&gt;=40.0%</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/web/__init__.py</td><td>0</td><td>100.0%</td><td>1</td><td style='font-size:0.85em;color:#555;'>complexity=0&lt;=15, coverage=100.0%&gt;=40.0%</td></tr>
+<tr><td><span style="background:#ef4444;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">RED</span></td><td style='font-family:monospace;'>brightshop/web/app.py</td><td>16</td><td>0.0%</td><td>5</td><td style='font-size:0.85em;color:#555;'>complexity=16&gt;15; coverage=0.0%&lt;40.0%</td></tr>
+<tr><td><span style="background:#eab308;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">YELLOW</span></td><td style='font-family:monospace;'>brightshop/web/helpers.py</td><td>3</td><td>0.0%</td><td>3</td><td style='font-size:0.85em;color:#555;'>complexity=3&lt;=15, commits=3&gt;=1</td></tr></tbody>
+  </table>
+</section>
+
+<section>
+  <h2>Audit Chain
+    <span style="float:right;color:#22c55e;font-size:0.85em;">✓ Chain intact</span>
+  </h2>
+  <table>
+    <thead><tr>
+      <th>#</th><th>Timestamp</th><th>Actor</th><th>Action</th><th>Hash (prefix)</th>
+    </tr></thead>
+    <tbody><tr><td>0</td><td>2026-09-26T15:25:27.168725+00:00</td><td>actions</td><td>propose_delete</td><td style='font-family:monospace;font-size:0.75em;'>7473c788a66d4be4…</td></tr>
+<tr><td>1</td><td>2026-09-26T15:25:27.177614+00:00</td><td>actions</td><td>propose_delete_blocked</td><td style='font-family:monospace;font-size:0.75em;'>bf269fe737d39763…</td></tr>
+<tr><td>2</td><td>2026-09-26T15:25:27.340805+00:00</td><td>actions</td><td>propose_refactor</td><td style='font-family:monospace;font-size:0.75em;'>af7d00e7b457df18…</td></tr>
+<tr><td>3</td><td>2026-09-26T15:25:27.352020+00:00</td><td>adversary</td><td>run_start</td><td style='font-family:monospace;font-size:0.75em;'>4720c976af39e5b4…</td></tr>
+<tr><td>4</td><td>2026-09-26T15:25:27.366077+00:00</td><td>adversary</td><td>pytest_before</td><td style='font-family:monospace;font-size:0.75em;'>26abbda858b54532…</td></tr>
+<tr><td>5</td><td>2026-09-26T15:25:28.200890+00:00</td><td>adversary</td><td>pytest_before_result</td><td style='font-family:monospace;font-size:0.75em;'>540063728ab4dda6…</td></tr>
+<tr><td>6</td><td>2026-09-26T15:25:28.214222+00:00</td><td>adversary</td><td>edge_cases_captured</td><td style='font-family:monospace;font-size:0.75em;'>648d75497d9b427e…</td></tr>
+<tr><td>7</td><td>2026-09-26T15:25:28.224633+00:00</td><td>adversary</td><td>pytest_after</td><td style='font-family:monospace;font-size:0.75em;'>fd2ef5c109d30fe2…</td></tr>
+<tr><td>8</td><td>2026-09-26T15:25:29.036682+00:00</td><td>adversary</td><td>pytest_after_result</td><td style='font-family:monospace;font-size:0.75em;'>f1bdaf1d1e4e1a1e…</td></tr>
+<tr><td>9</td><td>2026-09-26T15:25:29.049793+00:00</td><td>adversary</td><td>edge_cases_compared</td><td style='font-family:monospace;font-size:0.75em;'>c855169282947fe0…</td></tr>
+<tr><td>10</td><td>2026-09-26T15:25:29.064235+00:00</td><td>adversary</td><td>verdict</td><td style='font-family:monospace;font-size:0.75em;'>fb77070dcf787feb…</td></tr>
+<tr><td>11</td><td>2026-09-26T15:25:29.342930+00:00</td><td>actions</td><td>propose_refactor_applied</td><td style='font-family:monospace;font-size:0.75em;'>77db5d9a12b0cf5d…</td></tr></tbody>
+  </table>
+</section>
+<section><h2>Change Certificates</h2>
+<div style="border:1px solid #e5e7eb;border-radius:6px;padding:1em 1.2em;margin-bottom:1em;">
+  <h3 style="margin:0 0 0.4em;">Refactor -
+    <code>clamp</code> in <code>brightshop/money.py</code>
+    <span style="background:#22c55e;color:#fff;padding:2px 8px;border-radius:4px;font-size:0.8em;font-weight:600;">ACCEPT</span>
+  </h3>
+  <table style="font-size:0.9em;">
+    <tr><td>Branch</td><td><code>proofline/refactor-clamp-money</code></td></tr>
+    <tr><td>Committed</td><td>True</td></tr>
+    <tr><td>Tests before / after</td>
+        <td>27 / 27</td></tr>
+    <tr><td>Coverage before / after</td>
+        <td>22.75561097256858 / 22.75561097256858</td></tr>
+    <tr><td>Edge cases run</td><td>36</td></tr>
+  </table>
+  <h4>Known risks</h4><p style='color:#22c55e;'>No known risks.</p>
+  <p style="font-size:0.78em;color:#888;">
+    Ledger timestamp: 2026-09-26T15:25:29.342930+00:00
+    · Hash: <code>77db5d9a12b0cf5d6a7ee0db7798977c…</code>
+  </p>
+</div></section>
+<footer>Made with IBM Bob</footer>
+</body>
+</html>
