@@ -1,7 +1,0 @@
-{% extends "base.html" %}
-{% from "_macros.html" import head %}
-{% block title %}Not found{% endblock %}
-{% block content %}
-{{ head("404", "Nothing here", "The page you asked for does not exist in this demo shop.") }}
-<a class="btn primary" href="{{ url_for('dashboard') }}">Back to the dashboard</a>
-{% endblock %}
